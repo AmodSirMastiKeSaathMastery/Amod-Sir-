@@ -1,0 +1,1125 @@
+<!DOCTYPE html>
+<html lang="hi">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>All Rounder KBC — Class 9</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Tiro+Devanagari+Hindi:ital@0;1&family=Baloo+2:wght@400;600;700;800&display=swap');
+
+  :root {
+    --gold: #FFD700;
+    --gold2: #FFA500;
+    --dark: #0a0a1a;
+    --dark2: #12122a;
+    --dark3: #1a1a3a;
+    --blue: #1a3a6a;
+    --correct: #00c853;
+    --wrong: #d50000;
+    --option-bg: #0d1b4b;
+    --option-hover: #1a2d6b;
+    --white: #ffffff;
+    --light: #e8e8ff;
+  }
+
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+
+  body {
+    background: var(--dark);
+    color: var(--white);
+    font-family: 'Baloo 2', sans-serif;
+    min-height: 100vh;
+    overflow-x: hidden;
+  }
+
+  /* Starfield background */
+  body::before {
+    content: '';
+    position: fixed;
+    inset: 0;
+    background:
+      radial-gradient(ellipse at 20% 50%, #0a1a4a 0%, transparent 50%),
+      radial-gradient(ellipse at 80% 50%, #1a0a3a 0%, transparent 50%),
+      radial-gradient(ellipse at 50% 100%, #0a2a1a 0%, transparent 40%);
+    z-index: 0;
+  }
+
+  .container {
+    position: relative;
+    z-index: 1;
+    max-width: 900px;
+    margin: 0 auto;
+    padding: 20px;
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+  }
+
+  /* SCREENS */
+  .screen { display: none; }
+  .screen.active { display: flex; flex-direction: column; align-items: center; }
+
+  /* TITLE SCREEN */
+  .title-screen {
+    text-align: center;
+    gap: 20px;
+  }
+
+  .kbc-logo {
+    font-size: 4rem;
+    font-weight: 800;
+    background: linear-gradient(135deg, var(--gold), var(--gold2), var(--gold));
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+    text-shadow: none;
+    animation: pulse 2s ease-in-out infinite;
+    line-height: 1;
+  }
+
+  @keyframes pulse {
+    0%, 100% { filter: brightness(1); }
+    50% { filter: brightness(1.3); }
+  }
+
+  .kbc-sub {
+    font-size: 1.3rem;
+    color: var(--light);
+    opacity: 0.8;
+    font-family: 'Tiro Devanagari Hindi', serif;
+  }
+
+  .divider {
+    width: 200px;
+    height: 2px;
+    background: linear-gradient(90deg, transparent, var(--gold), transparent);
+    margin: 10px auto;
+  }
+
+  .subject-badges {
+    display: flex;
+    gap: 12px;
+    flex-wrap: wrap;
+    justify-content: center;
+    margin: 10px 0;
+  }
+
+  .badge {
+    padding: 8px 18px;
+    border-radius: 20px;
+    font-size: 0.9rem;
+    font-weight: 600;
+    border: 1px solid;
+  }
+  .badge.sci { background: #0d3b2e; border-color: #00c853; color: #00e676; }
+  .badge.sst { background: #1a2a0d; border-color: #76ff03; color: #b2ff59; }
+  .badge.hin { background: #3b1a0d; border-color: #ff6d00; color: #ffab40; }
+  .badge.mat { background: #0d1a3b; border-color: #448aff; color: #82b1ff; }
+
+  .info-box {
+    background: rgba(255,215,0,0.05);
+    border: 1px solid rgba(255,215,0,0.2);
+    border-radius: 16px;
+    padding: 20px 30px;
+    text-align: center;
+    font-size: 1rem;
+    color: var(--light);
+    line-height: 1.8;
+  }
+
+  .start-btn {
+    background: linear-gradient(135deg, var(--gold), var(--gold2));
+    color: #000;
+    border: none;
+    padding: 16px 50px;
+    font-size: 1.2rem;
+    font-weight: 800;
+    border-radius: 50px;
+    cursor: pointer;
+    font-family: 'Baloo 2', sans-serif;
+    transition: all 0.3s;
+    box-shadow: 0 0 30px rgba(255,215,0,0.4);
+  }
+  .start-btn:hover {
+    transform: scale(1.05);
+    box-shadow: 0 0 50px rgba(255,215,0,0.6);
+  }
+
+  /* GAME SCREEN */
+  .game-screen { gap: 16px; width: 100%; }
+
+  .top-bar {
+    width: 100%;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+  }
+
+  .q-counter {
+    background: rgba(255,255,255,0.05);
+    border: 1px solid rgba(255,255,255,0.1);
+    border-radius: 20px;
+    padding: 6px 16px;
+    font-size: 0.9rem;
+    color: var(--light);
+  }
+
+  .subject-tag {
+    padding: 6px 16px;
+    border-radius: 20px;
+    font-size: 0.85rem;
+    font-weight: 700;
+  }
+
+  .score-display {
+    background: rgba(255,215,0,0.1);
+    border: 1px solid rgba(255,215,0,0.3);
+    border-radius: 20px;
+    padding: 6px 16px;
+    font-size: 0.9rem;
+    color: var(--gold);
+    font-weight: 700;
+  }
+
+  /* Question box */
+  .question-box {
+    width: 100%;
+    background: linear-gradient(135deg, var(--dark2), var(--dark3));
+    border: 2px solid rgba(255,215,0,0.3);
+    border-radius: 20px;
+    padding: 30px;
+    text-align: center;
+    position: relative;
+    overflow: hidden;
+  }
+
+  .question-box::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background: radial-gradient(ellipse at 50% 0%, rgba(255,215,0,0.05), transparent 70%);
+  }
+
+  .question-number {
+    font-size: 0.85rem;
+    color: var(--gold);
+    opacity: 0.7;
+    margin-bottom: 10px;
+    position: relative;
+  }
+
+  .question-text {
+    font-size: 1.4rem;
+    font-family: 'Tiro Devanagari Hindi', serif;
+    line-height: 1.6;
+    color: var(--white);
+    position: relative;
+  }
+
+  /* Options */
+  .options-grid {
+    width: 100%;
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 12px;
+  }
+
+  .option-btn {
+    background: var(--option-bg);
+    border: 2px solid rgba(255,255,255,0.1);
+    border-radius: 14px;
+    padding: 16px 20px;
+    font-size: 1rem;
+    font-family: 'Tiro Devanagari Hindi', serif;
+    color: var(--white);
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    transition: all 0.2s;
+    text-align: left;
+  }
+
+  .option-btn:hover:not(:disabled) {
+    background: var(--option-hover);
+    border-color: rgba(255,215,0,0.4);
+    transform: translateY(-2px);
+  }
+
+  .option-btn:disabled { cursor: default; }
+
+  .option-letter {
+    width: 32px;
+    height: 32px;
+    border-radius: 50%;
+    background: rgba(255,255,255,0.1);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-weight: 700;
+    font-size: 0.9rem;
+    font-family: 'Baloo 2', sans-serif;
+    flex-shrink: 0;
+  }
+
+  .option-btn.correct {
+    background: #003d1a;
+    border-color: var(--correct);
+    animation: correctFlash 0.5s ease;
+  }
+  .option-btn.correct .option-letter { background: var(--correct); color: #000; }
+
+  .option-btn.wrong {
+    background: #3d0000;
+    border-color: var(--wrong);
+    animation: wrongShake 0.4s ease;
+  }
+  .option-btn.wrong .option-letter { background: var(--wrong); }
+
+  .option-btn.reveal {
+    background: #003d1a;
+    border-color: var(--correct);
+    opacity: 0.7;
+  }
+
+  @keyframes correctFlash {
+    0% { transform: scale(1); }
+    50% { transform: scale(1.03); }
+    100% { transform: scale(1); }
+  }
+
+  @keyframes wrongShake {
+    0%, 100% { transform: translateX(0); }
+    25% { transform: translateX(-8px); }
+    75% { transform: translateX(8px); }
+  }
+
+  /* Explanation */
+  .explanation {
+    width: 100%;
+    background: rgba(0,200,83,0.08);
+    border: 1px solid rgba(0,200,83,0.3);
+    border-radius: 14px;
+    padding: 16px 20px;
+    font-size: 0.95rem;
+    color: #b9f6ca;
+    font-family: 'Tiro Devanagari Hindi', serif;
+    line-height: 1.6;
+    display: none;
+  }
+  .explanation.show { display: block; animation: fadeIn 0.4s ease; }
+  .explanation .tip-label { color: var(--gold); font-weight: 700; margin-right: 8px; font-family: 'Baloo 2', sans-serif; }
+
+  @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+
+  /* Lifelines */
+  .lifelines {
+    width: 100%;
+    display: flex;
+    gap: 12px;
+    justify-content: center;
+    flex-wrap: wrap;
+  }
+
+  .lifeline-btn {
+    background: rgba(255,255,255,0.05);
+    border: 1px solid rgba(255,255,255,0.15);
+    border-radius: 12px;
+    padding: 10px 20px;
+    color: var(--white);
+    font-family: 'Baloo 2', sans-serif;
+    font-size: 0.9rem;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.2s;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+  .lifeline-btn:hover:not(:disabled) {
+    background: rgba(255,215,0,0.1);
+    border-color: rgba(255,215,0,0.4);
+  }
+  .lifeline-btn:disabled {
+    opacity: 0.3;
+    cursor: not-allowed;
+  }
+  .lifeline-btn .ll-icon { font-size: 1.1rem; }
+
+  /* Next button */
+  .next-btn {
+    background: linear-gradient(135deg, var(--gold), var(--gold2));
+    color: #000;
+    border: none;
+    padding: 14px 40px;
+    font-size: 1rem;
+    font-weight: 800;
+    border-radius: 50px;
+    cursor: pointer;
+    font-family: 'Baloo 2', sans-serif;
+    transition: all 0.3s;
+    display: none;
+  }
+  .next-btn.show { display: block; animation: fadeIn 0.4s ease; }
+  .next-btn:hover { transform: scale(1.05); box-shadow: 0 0 20px rgba(255,215,0,0.4); }
+
+  /* Progress bar */
+  .progress-wrap {
+    width: 100%;
+    height: 6px;
+    background: rgba(255,255,255,0.08);
+    border-radius: 3px;
+    overflow: hidden;
+  }
+  .progress-bar {
+    height: 100%;
+    background: linear-gradient(90deg, var(--gold), var(--gold2));
+    border-radius: 3px;
+    transition: width 0.5s ease;
+  }
+
+  /* RESULT SCREEN */
+  .result-screen { text-align: center; gap: 20px; }
+
+  .result-trophy { font-size: 5rem; animation: bounce 1s ease infinite; }
+  @keyframes bounce {
+    0%, 100% { transform: translateY(0); }
+    50% { transform: translateY(-15px); }
+  }
+
+  .result-title {
+    font-size: 2.5rem;
+    font-weight: 800;
+    background: linear-gradient(135deg, var(--gold), var(--gold2));
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+  }
+
+  .result-score {
+    font-size: 3rem;
+    font-weight: 800;
+    color: var(--white);
+  }
+
+  .result-score span { color: var(--gold); }
+
+  .result-msg {
+    font-size: 1.1rem;
+    color: var(--light);
+    font-family: 'Tiro Devanagari Hindi', serif;
+    line-height: 1.8;
+    max-width: 500px;
+  }
+
+  .subject-scores {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 12px;
+    width: 100%;
+    max-width: 500px;
+  }
+
+  .subj-score-card {
+    background: rgba(255,255,255,0.04);
+    border: 1px solid rgba(255,255,255,0.1);
+    border-radius: 14px;
+    padding: 16px;
+    text-align: center;
+  }
+
+  .subj-score-card .subj-name { font-size: 0.85rem; opacity: 0.7; margin-bottom: 8px; }
+  .subj-score-card .subj-val { font-size: 1.5rem; font-weight: 700; }
+
+  .restart-btn {
+    background: linear-gradient(135deg, var(--gold), var(--gold2));
+    color: #000;
+    border: none;
+    padding: 14px 40px;
+    font-size: 1rem;
+    font-weight: 800;
+    border-radius: 50px;
+    cursor: pointer;
+    font-family: 'Baloo 2', sans-serif;
+    transition: all 0.3s;
+  }
+  .restart-btn:hover { transform: scale(1.05); }
+
+  /* Audience poll overlay */
+  .overlay {
+    position: fixed;
+    inset: 0;
+    background: rgba(0,0,0,0.8);
+    z-index: 100;
+    display: none;
+    align-items: center;
+    justify-content: center;
+  }
+  .overlay.show { display: flex; }
+
+  .poll-box {
+    background: var(--dark2);
+    border: 2px solid var(--gold);
+    border-radius: 20px;
+    padding: 30px;
+    width: 90%;
+    max-width: 480px;
+    text-align: center;
+    animation: fadeIn 0.3s ease;
+  }
+
+  .poll-title { font-size: 1.2rem; color: var(--gold); font-weight: 700; margin-bottom: 20px; }
+
+  .poll-bars { display: flex; flex-direction: column; gap: 12px; margin-bottom: 20px; }
+
+  .poll-row { display: flex; align-items: center; gap: 12px; }
+  .poll-label { width: 24px; font-weight: 700; color: var(--gold); }
+  .poll-bar-wrap { flex: 1; height: 28px; background: rgba(255,255,255,0.05); border-radius: 6px; overflow: hidden; }
+  .poll-bar { height: 100%; border-radius: 6px; display: flex; align-items: center; padding-left: 10px; font-size: 0.85rem; font-weight: 700; transition: width 1s ease; }
+  .poll-pct { width: 45px; text-align: right; font-size: 0.9rem; }
+
+  .close-poll {
+    background: rgba(255,255,255,0.1);
+    border: 1px solid rgba(255,255,255,0.2);
+    color: var(--white);
+    padding: 10px 24px;
+    border-radius: 20px;
+    cursor: pointer;
+    font-family: 'Baloo 2', sans-serif;
+    font-weight: 600;
+  }
+</style>
+</head>
+<body>
+
+<!-- TITLE SCREEN -->
+<div class="container">
+  <div class="screen title-screen active" id="titleScreen">
+    <div class="kbc-logo">🎯 All Rounder KBC</div>
+    <div class="kbc-sub">कौन बनेगा All Rounder?</div>
+    <div class="divider"></div>
+    <div class="subject-badges">
+      <span class="badge sci">🔬 Science</span>
+      <span class="badge sst">🌍 Social Science</span>
+      <span class="badge hin">📖 Hindi</span>
+      <span class="badge mat">🔢 Math</span>
+    </div>
+    <div class="info-box">
+      कुल <strong>2 Rounds</strong> — Round 1: 20 सवाल | Round 2: 12 सवाल<br>
+      3 Lifelines: 50-50 &nbsp;|&nbsp; Audience Poll &nbsp;|&nbsp; Skip<br>
+      <small style="opacity:0.6">Class 9 — Marg Darshan Point</small>
+    </div>
+    <button class="start-btn" onclick="startGame()">खेलना शुरू करें ▶</button>
+  </div>
+
+  <!-- GAME SCREEN -->
+  <div class="screen game-screen" id="gameScreen">
+    <div class="top-bar">
+      <div class="q-counter" id="qCounter">सवाल 1 / 20</div>
+      <div class="subject-tag" id="subjectTag">🔬 Science</div>
+      <div class="score-display">✅ <span id="scoreDisplay">0</span></div>
+    </div>
+
+    <div class="progress-wrap">
+      <div class="progress-bar" id="progressBar" style="width:5%"></div>
+    </div>
+
+    <div class="question-box">
+      <div class="question-number" id="questionNumber">Q1</div>
+      <div class="question-text" id="questionText">सवाल यहाँ आएगा...</div>
+    </div>
+
+    <div class="options-grid" id="optionsGrid"></div>
+
+    <div class="explanation" id="explanation">
+      <span class="tip-label">💡 Tip:</span>
+      <span id="explanationText"></span>
+    </div>
+
+    <div class="lifelines">
+      <button class="lifeline-btn" id="ll5050" onclick="useFiftyFifty()">
+        <span class="ll-icon">✂️</span> 50-50
+      </button>
+      <button class="lifeline-btn" id="llAudience" onclick="useAudiencePoll()">
+        <span class="ll-icon">👥</span> Audience Poll
+      </button>
+      <button class="lifeline-btn" id="llSkip" onclick="useSkip()">
+        <span class="ll-icon">⏭️</span> Skip
+      </button>
+    </div>
+
+    <button class="next-btn" id="nextBtn" onclick="nextQuestion()">अगला सवाल →</button>
+  </div>
+
+  <!-- RESULT SCREEN -->
+  <div class="screen result-screen" id="resultScreen">
+    <div class="result-trophy" id="resultTrophy">🏆</div>
+    <div class="result-title" id="resultTitle">शाबाश!</div>
+    <div class="result-score">
+      <span id="finalScore">0</span> / 32 सही
+    </div>
+    <div class="result-msg" id="resultMsg"></div>
+    <div class="subject-scores" id="subjectScores"></div>
+    <button class="restart-btn" onclick="restartGame()">🔄 फिर से खेलें</button>
+  </div>
+</div>
+
+  <!-- ROUND BREAK SCREEN -->
+  <div class="screen result-screen" id="roundBreakScreen">
+    <div class="result-trophy">🎯</div>
+    <div class="result-title" style="font-size:2rem">Round 1 पूरा!</div>
+    <div class="result-score"><span id="round1Score">0</span> / 20 सही</div>
+    <div class="result-msg">शाबाश! अब Round 2 शुरू होगा — 12 नए सवाल।<br><small style="opacity:0.6">Lifelines फिर से मिलेंगी!</small></div>
+    <div class="subject-scores" id="round1SubjectScores"></div>
+    <button class="start-btn" onclick="startRound2()" style="margin-top:10px">Round 2 शुरू करें ▶</button>
+  </div>
+</div>
+
+<!-- Audience Poll Overlay -->
+<div class="overlay" id="pollOverlay">
+  <div class="poll-box">
+    <div class="poll-title">👥 Audience Poll</div>
+    <div class="poll-bars" id="pollBars"></div>
+    <button class="close-poll" onclick="closePoll()">बंद करें</button>
+  </div>
+</div>
+
+<script>
+const questions = [
+  // SCIENCE x7
+  {
+    subject: "Science", icon: "🔬", color: "#00c853",
+    q: "पौधे अपना खाना किससे बनाते हैं?",
+    opts: ["केवल पानी से", "सूरज की रोशनी, पानी और CO₂ से", "मिट्टी और नमक से", "ऑक्सीजन से"],
+    ans: 1,
+    tip: "Photosynthesis = सूरज + पानी + CO₂ → खाना + ऑक्सीजन। पौधे factory हैं!"
+  },
+  {
+    subject: "Science", icon: "🔬", color: "#00c853",
+    q: "आवाज़ (Sound) किसमें सफर नहीं कर सकती?",
+    opts: ["पानी में", "हवा में", "लोहे में", "Vacuum (खाली जगह) में"],
+    ans: 3,
+    tip: "आवाज़ को सफर करने के लिए माध्यम चाहिए — Vacuum में कुछ नहीं होता, इसलिए नहीं जा सकती।"
+  },
+  {
+    subject: "Science", icon: "🔬", color: "#00c853",
+    q: "अगर आप दर्पण (Mirror) से 3 मीटर दूर खड़े हों, तो आपकी image कितनी दूर दिखेगी?",
+    opts: ["3 मीटर", "1.5 मीटर", "6 मीटर", "9 मीटर"],
+    ans: 2,
+    tip: "Mirror के पीछे 3 मीटर + आपके सामने 3 मीटर = कुल 6 मीटर। Image हमेशा दोगुनी दूरी पर!"
+  },
+  {
+    subject: "Science", icon: "🔬", color: "#00c853",
+    q: "हमारे शरीर में खून किस काम में आता है?",
+    opts: ["केवल लाल रंग देने के लिए", "ऑक्सीजन और पोषण पहुँचाने के लिए", "हड्डियाँ बनाने के लिए", "पाचन में मदद के लिए"],
+    ans: 1,
+    tip: "Blood = शरीर की delivery service — ऑक्सीजन, nutrients, hormones सब deliver करती है।"
+  },
+  {
+    subject: "Science", icon: "🔬", color: "#00c853",
+    q: "बिजली का बल्ब जलने के लिए क्या ज़रूरी है?",
+    opts: ["सिर्फ voltage", "पूरा circuit (closed loop)", "सिर्फ तार", "सिर्फ बल्ब"],
+    ans: 1,
+    tip: "Circuit बंद (closed) होना चाहिए — टूटे circuit में करंट नहीं बहता, बल्ब नहीं जलता।"
+  },
+  {
+    subject: "Science", icon: "🔬", color: "#00c853",
+    q: "पृथ्वी पर Gravity का क्या काम है?",
+    opts: ["हमें गर्म रखना", "हवा बनाना", "हमें और चीज़ों को ज़मीन से जोड़े रखना", "बारिश लाना"],
+    ans: 2,
+    tip: "Gravity = वो ताकत जो सब कुछ पृथ्वी की तरफ खींचती है — इसीलिए हम उड़ते नहीं!"
+  },
+  {
+    subject: "Science", icon: "🔬", color: "#00c853",
+    q: "CO₂ कम हो जाए तो किसान की फसल पर क्या असर होगा?",
+    opts: ["फसल और बढ़िया होगी", "कोई फर्क नहीं पड़ेगा", "Photosynthesis कम होगी, फसल घटेगी", "पानी ज़्यादा लगेगा"],
+    ans: 2,
+    tip: "CO₂ + H₂O + Sunlight → Glucose। एक भी कम हो तो खाना कम बनेगा — फसल घटेगी।"
+  },
+
+  // SOCIAL SCIENCE x7
+  {
+    subject: "Social Science", icon: "🌍", color: "#76ff03",
+    q: "भारत में राशन सस्ता क्यों मिलता है?",
+    opts: ["दुकानदार दयालु है", "PDS के ज़रिए सरकार subsidy देती है", "अनाज वैसे भी सस्ता है", "Tax नहीं लगता"],
+    ans: 1,
+    tip: "PDS = Public Distribution System — सरकार गरीबों को सस्ते दाम पर अनाज देती है।"
+  },
+  {
+    subject: "Social Science", icon: "🌍", color: "#76ff03",
+    q: "किसान मेहनत करने के बाद भी गरीब क्यों रह जाता है?",
+    opts: ["वो काम नहीं करता", "खेत बहुत बड़े हैं", "बिचौलिए मुनाफा ले जाते हैं और खेत छोटे हैं", "सरकार मदद करती है"],
+    ans: 2,
+    tip: "Bihar में किसान उगाता है, बिचौलिया (middleman) बेचता है और फायदा रखता है — यही असली समस्या है।"
+  },
+  {
+    subject: "Social Science", icon: "🌍", color: "#76ff03",
+    q: "'लोकतंत्र' का सबसे ज़रूरी मतलब क्या है?",
+    opts: ["एक ताकतवर नेता का राज", "जनता द्वारा चुनी सरकार", "सेना की शक्ति", "अमीरों का राज"],
+    ans: 1,
+    tip: "Of the people, By the people, For the people — Abraham Lincoln ने यही कहा था।"
+  },
+  {
+    subject: "Social Science", icon: "🌍", color: "#76ff03",
+    q: "भारत में गरीबी रेखा (Poverty Line) कैसे तय होती है?",
+    opts: ["ज़मीन से", "जाति से", "रोज़ की कैलोरी और खर्च से", "नौकरी से"],
+    ans: 2,
+    tip: "गाँव में 2400 calorie, शहर में 2100 calorie रोज़ — इससे कम मिले तो 'गरीब' माना जाता है।"
+  },
+  {
+    subject: "Social Science", icon: "🌍", color: "#76ff03",
+    q: "भारत में सबसे ज़्यादा लोग किस काम से अपनी आजीविका कमाते हैं?",
+    opts: ["उद्योग (Factory)", "व्यापार", "खेती-बाड़ी", "सरकारी नौकरी"],
+    ans: 2,
+    tip: "भारत की लगभग 55-60% आबादी खेती पर निर्भर है — इसीलिए India को 'Agricultural country' कहते हैं।"
+  },
+  {
+    subject: "Social Science", icon: "🌍", color: "#76ff03",
+    q: "'मानव पूँजी' (Human Capital) क्या होती है?",
+    opts: ["पैसा और मशीन", "इंसान की पढ़ाई, skill और स्वास्थ्य", "ज़मीन और मकान", "बैंक balance"],
+    ans: 1,
+    tip: "Doctor की degree = मानव पूँजी | hospital की machine = भौतिक पूँजी। इंसान ही सबसे बड़ा resource है!"
+  },
+  {
+    subject: "Social Science", icon: "🌍", color: "#76ff03",
+    q: "बेरोज़गारी बढ़ने पर सबसे पहले क्या होगा?",
+    opts: ["GDP बढ़ेगी", "Export बढ़ेगा", "लोगों की कमाई घटेगी, बाज़ार ठंडा होगा", "महंगाई घटेगी"],
+    ans: 2,
+    tip: "कमाई नहीं → खर्च नहीं → माँग कम → factory बंद → और बेरोज़गारी — यह एक chain है!"
+  },
+
+  // HINDI x3
+  {
+    subject: "Hindi", icon: "📖", color: "#ff6d00",
+    q: "'उपसर्ग' शब्द में कहाँ लगता है?",
+    opts: ["शब्द के अंत में", "शब्द के बीच में", "शब्द के शुरू में", "कहीं भी"],
+    ans: 2,
+    tip: "उप+सर्ग = शुरू में लगने वाला। जैसे 'अन' + 'पढ़' = 'अनपढ़'। Prefix की तरह!"
+  },
+  {
+    subject: "Hindi", icon: "📖", color: "#ff6d00",
+    q: "'काली घटा, काली रात' — यह कौन सा अलंकार है?",
+    opts: ["उपमा", "यमक", "रूपक", "अनुप्रास"],
+    ans: 1,
+    tip: "यमक = एक ही शब्द दो बार, अलग-अलग अर्थ में। यहाँ 'काली' = बादल का काला + रात का अंधेरा।"
+  },
+  {
+    subject: "Hindi", icon: "📖", color: "#ff6d00",
+    q: "'निराशा' शब्द में कौन सा उपसर्ग है?",
+    opts: ["नि", "निर्", "निरा", "आशा"],
+    ans: 1,
+    tip: "निर् + आशा = निराशा। 'र्' संधि में बदल जाता है। निर् का मतलब है 'बिना' — बिना आशा के!"
+  },
+
+  // MATH x3
+  {
+    subject: "Math", icon: "🔢", color: "#448aff",
+    q: "किसी संख्या का 25% = 75 है। वह संख्या क्या है?",
+    opts: ["200", "250", "300", "350"],
+    ans: 2,
+    tip: "75 ÷ 25 × 100 = 300। याद रखो: % निकालने में हमेशा 100 से गुणा करो!"
+  },
+  {
+    subject: "Math", icon: "🔢", color: "#448aff",
+    q: "LCM = 48 और HCF = 4 है। दोनों संख्याओं का गुणनफल क्या होगा?",
+    opts: ["52", "44", "192", "96"],
+    ans: 2,
+    tip: "LCM × HCF = पहली संख्या × दूसरी संख्या। तो 48 × 4 = 192।"
+  },
+  {
+    subject: "Math", icon: "🔢", color: "#448aff",
+    q: "एक दुकानदार ने 200 रुपये में सामान खरीदा और 15% profit पर बेचा। बेचने का दाम क्या होगा?",
+    opts: ["215 रुपये", "220 रुपये", "230 रुपये", "240 रुपये"],
+    ans: 2,
+    tip: "Profit = 200 × 15/100 = 30 रुपये। Selling Price = 200 + 30 = 230 रुपये।"
+  },
+
+  // --- Round 2 के 12 नए सवाल ---
+
+  // SCIENCE x4
+  {
+    subject: "Science", icon: "🔬", color: "#00c853",
+    q: "दूध से दही बनना किस प्रकार का बदलाव है?",
+    opts: ["भौतिक बदलाव", "रासायनिक बदलाव", "कोई बदलाव नहीं", "यांत्रिक बदलाव"],
+    ans: 1,
+    tip: "रासायनिक बदलाव = नया पदार्थ बनता है, वापस नहीं होता। दही से दूध नहीं बनता — इसलिए Chemical Change!"
+  },
+  {
+    subject: "Science", icon: "🔬", color: "#00c853",
+    q: "मनुष्य के शरीर में कितनी हड्डियाँ होती हैं?",
+    opts: ["106", "206", "306", "406"],
+    ans: 1,
+    tip: "206 हड्डियाँ — जन्म के समय 270+ होती हैं, बड़े होने पर कुछ जुड़ जाती हैं। सबसे छोटी हड्डी कान में है!"
+  },
+  {
+    subject: "Science", icon: "🔬", color: "#00c853",
+    q: "सूर्य से पृथ्वी तक प्रकाश पहुँचने में कितना समय लगता है?",
+    opts: ["8 सेकंड", "8 मिनट", "8 घंटे", "8 दिन"],
+    ans: 1,
+    tip: "लगभग 8 मिनट 20 सेकंड! प्रकाश की speed = 3 लाख km/s। सूर्य 15 करोड़ km दूर है।"
+  },
+  {
+    subject: "Science", icon: "🔬", color: "#00c853",
+    q: "पसीना आने से शरीर ठंडा क्यों होता है?",
+    opts: ["पसीना ठंडा होता है", "पसीना वाष्पित होते समय गर्मी खींचता है", "पानी बाहर निकलता है", "नमक निकलता है"],
+    ans: 1,
+    tip: "Evaporation = वाष्पीकरण। जब पसीना उड़ता है तो शरीर से heat लेकर जाता है — इसीलिए ठंडक लगती है!"
+  },
+
+  // SOCIAL SCIENCE x4
+  {
+    subject: "Social Science", icon: "🌍", color: "#76ff03",
+    q: "भारत में 'पंचायती राज' किससे जुड़ा है?",
+    opts: ["शहरों की सरकार से", "गाँव स्तर पर स्वशासन से", "केंद्र सरकार से", "राज्य विधानसभा से"],
+    ans: 1,
+    tip: "पंचायती राज = गाँव की अपनी सरकार। ग्राम पंचायत → पंचायत समिति → ज़िला परिषद — तीन स्तर।"
+  },
+  {
+    subject: "Social Science", icon: "🌍", color: "#76ff03",
+    q: "भारत में बेरोज़गारी का सबसे आम प्रकार गाँवों में कौन सा है?",
+    opts: ["खुली बेरोज़गारी", "प्रच्छन्न बेरोज़गारी (Disguised)", "शिक्षित बेरोज़गारी", "मौसमी बेरोज़गारी"],
+    ans: 1,
+    tip: "Disguised Unemployment = जितने काम की ज़रूरत नहीं उससे ज़्यादा लोग लगे हैं। जैसे 2 लोगों का काम 5 करें।"
+  },
+  {
+    subject: "Social Science", icon: "🌍", color: "#76ff03",
+    q: "फ्रांस की क्रांति किस नारे के लिए मशहूर है?",
+    opts: ["सत्य, अहिंसा, प्रेम", "स्वतंत्रता, समानता, बंधुत्व", "एकता, विश्वास, अनुशासन", "शांति, न्याय, समृद्धि"],
+    ans: 1,
+    tip: "1789 की फ्रांसीसी क्रांति — Liberté, Égalité, Fraternité। इसने पूरी दुनिया में लोकतंत्र की नींव रखी।"
+  },
+  {
+    subject: "Social Science", icon: "🌍", color: "#76ff03",
+    q: "भारत में सबसे ज़्यादा सिंचाई किस माध्यम से होती है?",
+    opts: ["नहर से", "तालाब से", "नलकूप और कुएँ से", "वर्षा से"],
+    ans: 2,
+    tip: "आज भारत में सबसे ज़्यादा सिंचाई नलकूप (Tubewell) से होती है — हरित क्रांति के बाद यह बढ़ा।"
+  },
+
+  // HINDI x2
+  {
+    subject: "Hindi", icon: "📖", color: "#ff6d00",
+    q: "'जो परिश्रम करता है वह सफल होता है' — यह किस प्रकार का वाक्य है?",
+    opts: ["सरल वाक्य", "संयुक्त वाक्य", "मिश्र वाक्य", "प्रश्नवाचक वाक्य"],
+    ans: 2,
+    tip: "मिश्र वाक्य = एक मुख्य उपवाक्य + एक आश्रित उपवाक्य। 'जो...वह' — यह मिश्र वाक्य की पहचान है।"
+  },
+  {
+    subject: "Hindi", icon: "📖", color: "#ff6d00",
+    q: "'सूरज पूरब से उगता है' — इसमें 'पूरब से' क्या है?",
+    opts: ["कर्ता", "कर्म", "क्रिया", "क्रियाविशेषण"],
+    ans: 3,
+    tip: "क्रियाविशेषण = क्रिया के बारे में बताए। 'पूरब से' बताता है कि उगना कहाँ से हो रहा है — इसलिए Adverb।"
+  },
+
+  // MATH x2
+  {
+    subject: "Math", icon: "🔢", color: "#448aff",
+    q: "एक वृत्त की त्रिज्या (radius) 7 cm है। उसका क्षेत्रफल क्या होगा? (π = 22/7)",
+    opts: ["44 cm²", "154 cm²", "144 cm²", "254 cm²"],
+    ans: 1,
+    tip: "वृत्त का क्षेत्रफल = πr² = 22/7 × 7 × 7 = 22 × 7 = 154 cm²। Circumference = 2πr = 44 cm।"
+  },
+  {
+    subject: "Math", icon: "🔢", color: "#448aff",
+    q: "अगर 5 आदमी एक काम 10 दिन में करें, तो 10 आदमी वही काम कितने दिन में करेंगे?",
+    opts: ["20 दिन", "10 दिन", "5 दिन", "2 दिन"],
+    ans: 2,
+    tip: "आदमी बढ़े तो दिन घटेंगे — Inverse Proportion। 5×10 = 10×? → ? = 5 दिन।"
+  }
+];
+
+// Shuffle questions
+function shuffleArray(arr) {
+  const a = [...arr];
+  for (let i = a.length - 1; i > 0; i--) {
+    const j = Math.floor(Math.random() * (i + 1));
+    [a[i], a[j]] = [a[j], a[i]];
+  }
+  return a;
+}
+
+const round1Qs = questions.slice(0, 20);
+const round2Qs = questions.slice(20);
+
+let currentRound = 1;
+let shuffled = [];
+let currentQ = 0;
+let score = 0;
+let round1Score = 0;
+let answered = false;
+let lifelines = { fifty: true, audience: true, skip: true };
+let subjectScores = { Science: [0,0], "Social Science": [0,0], Hindi: [0,0], Math: [0,0] };
+let removedOpts = [];
+
+function startGame() {
+  currentRound = 1;
+  shuffled = shuffleArray(round1Qs);
+  currentQ = 0;
+  score = 0;
+  round1Score = 0;
+  answered = false;
+  lifelines = { fifty: true, audience: true, skip: true };
+  subjectScores = { Science: [0,0], "Social Science": [0,0], Hindi: [0,0], Math: [0,0] };
+
+  document.getElementById('titleScreen').classList.remove('active');
+  document.getElementById('gameScreen').classList.add('active');
+  loadQuestion();
+}
+
+function startRound2() {
+  currentRound = 2;
+  shuffled = shuffleArray(round2Qs);
+  currentQ = 0;
+  answered = false;
+  lifelines = { fifty: true, audience: true, skip: true };
+
+  document.getElementById('roundBreakScreen').classList.remove('active');
+  document.getElementById('gameScreen').classList.add('active');
+  loadQuestion();
+}
+
+function loadQuestion() {
+  answered = false;
+  removedOpts = [];
+
+  const total = currentRound === 1 ? 20 : 12;
+  const q = shuffled[currentQ];
+  document.getElementById('qCounter').textContent = `Round ${currentRound} — सवाल ${currentQ+1} / ${total}`;
+  document.getElementById('progressBar').style.width = `${((currentQ+1)/total)*100}%`;
+  document.getElementById('questionNumber').textContent = `Q${currentQ+1}`;
+  document.getElementById('questionText').textContent = q.q;
+  document.getElementById('scoreDisplay').textContent = score;
+
+  // Subject tag
+  const tag = document.getElementById('subjectTag');
+  tag.textContent = `${q.icon} ${q.subject}`;
+  tag.style.background = q.color + '22';
+  tag.style.color = q.color;
+  tag.style.border = `1px solid ${q.color}55`;
+
+  // Options
+  const grid = document.getElementById('optionsGrid');
+  grid.innerHTML = '';
+  ['A','B','C','D'].forEach((letter, i) => {
+    const btn = document.createElement('button');
+    btn.className = 'option-btn';
+    btn.id = `opt${i}`;
+    btn.innerHTML = `<span class="option-letter">${letter}</span><span>${q.opts[i]}</span>`;
+    btn.onclick = () => selectAnswer(i);
+    grid.appendChild(btn);
+  });
+
+  document.getElementById('explanation').classList.remove('show');
+  document.getElementById('nextBtn').classList.remove('show');
+
+  document.getElementById('ll5050').disabled = !lifelines.fifty;
+  document.getElementById('llAudience').disabled = !lifelines.audience;
+  document.getElementById('llSkip').disabled = !lifelines.skip;
+}
+
+function selectAnswer(chosen) {
+  if (answered) return;
+  answered = true;
+
+  const q = shuffled[currentQ];
+  const correct = q.ans;
+  subjectScores[q.subject][1]++;
+
+  const btns = document.querySelectorAll('.option-btn');
+  btns.forEach(b => b.disabled = true);
+
+  if (chosen === correct) {
+    btns[chosen].classList.add('correct');
+    score++;
+    subjectScores[q.subject][0]++;
+  } else {
+    btns[chosen].classList.add('wrong');
+    btns[correct].classList.add('correct');
+  }
+
+  document.getElementById('explanationText').textContent = q.tip;
+  document.getElementById('explanation').classList.add('show');
+  document.getElementById('scoreDisplay').textContent = score;
+  document.getElementById('nextBtn').classList.add('show');
+}
+
+function nextQuestion() {
+  currentQ++;
+  const total = currentRound === 1 ? 20 : 12;
+  if (currentQ >= total) {
+    if (currentRound === 1) {
+      showRoundBreak();
+    } else {
+      showResult();
+    }
+  } else {
+    loadQuestion();
+  }
+}
+
+function showRoundBreak() {
+  round1Score = score;
+  document.getElementById('gameScreen').classList.remove('active');
+  document.getElementById('roundBreakScreen').classList.add('active');
+  document.getElementById('round1Score').textContent = round1Score;
+
+  const container = document.getElementById('round1SubjectScores');
+  container.innerHTML = '';
+  const subjects = [
+    { name: "🔬 Science", key: "Science", color: "#00c853" },
+    { name: "🌍 Soc. Sci.", key: "Social Science", color: "#76ff03" },
+    { name: "📖 Hindi", key: "Hindi", color: "#ff6d00" },
+    { name: "🔢 Math", key: "Math", color: "#448aff" }
+  ];
+  subjects.forEach(s => {
+    const [got, total] = subjectScores[s.key];
+    if (total > 0) container.innerHTML += `
+      <div class="subj-score-card">
+        <div class="subj-name">${s.name}</div>
+        <div class="subj-val" style="color:${s.color}">${got} / ${total}</div>
+      </div>`;
+  });
+}
+
+function useFiftyFifty() {
+  if (!lifelines.fifty || answered) return;
+  lifelines.fifty = false;
+  document.getElementById('ll5050').disabled = true;
+
+  const q = shuffled[currentQ];
+  const correct = q.ans;
+  const wrong = [0,1,2,3].filter(i => i !== correct);
+  const toRemove = wrong.sort(() => Math.random()-0.5).slice(0,2);
+  toRemove.forEach(i => {
+    const btn = document.getElementById(`opt${i}`);
+    btn.style.opacity = '0.2';
+    btn.style.pointerEvents = 'none';
+  });
+}
+
+function useAudiencePoll() {
+  if (!lifelines.audience || answered) return;
+  lifelines.audience = false;
+  document.getElementById('llAudience').disabled = true;
+
+  const q = shuffled[currentQ];
+  const correct = q.ans;
+
+  const pcts = [0,0,0,0];
+  pcts[correct] = Math.floor(Math.random()*20) + 55;
+  let remaining = 100 - pcts[correct];
+  const others = [0,1,2,3].filter(i => i !== correct);
+  others.forEach((i, idx) => {
+    if (idx === others.length-1) {
+      pcts[i] = remaining;
+    } else {
+      const p = Math.floor(Math.random() * remaining * 0.6);
+      pcts[i] = p;
+      remaining -= p;
+    }
+  });
+
+  const bars = document.getElementById('pollBars');
+  bars.innerHTML = '';
+  ['A','B','C','D'].forEach((letter, i) => {
+    const color = i === correct ? '#00c853' : '#ff6d00';
+    bars.innerHTML += `
+      <div class="poll-row">
+        <div class="poll-label">${letter}</div>
+        <div class="poll-bar-wrap">
+          <div class="poll-bar" style="width:0%;background:${color}" data-pct="${pcts[i]}">
+            ${q.opts[i].substring(0,20)}...
+          </div>
+        </div>
+        <div class="poll-pct">${pcts[i]}%</div>
+      </div>`;
+  });
+
+  document.getElementById('pollOverlay').classList.add('show');
+  setTimeout(() => {
+    document.querySelectorAll('.poll-bar').forEach(bar => {
+      bar.style.width = bar.dataset.pct + '%';
+    });
+  }, 100);
+}
+
+function closePoll() {
+  document.getElementById('pollOverlay').classList.remove('show');
+}
+
+function useSkip() {
+  if (!lifelines.skip || answered) return;
+  lifelines.skip = false;
+  document.getElementById('llSkip').disabled = true;
+  answered = true;
+
+  const q = shuffled[currentQ];
+  document.querySelectorAll('.option-btn').forEach(b => b.disabled = true);
+  document.getElementById(`opt${q.ans}`).classList.add('reveal');
+  document.getElementById('explanationText').textContent = "Skip किया! " + q.tip;
+  document.getElementById('explanation').classList.add('show');
+  document.getElementById('nextBtn').classList.add('show');
+}
+
+function showResult() {
+  document.getElementById('gameScreen').classList.remove('active');
+  document.getElementById('resultScreen').classList.add('active');
+
+  const total = score;
+  document.getElementById('finalScore').textContent = total;
+
+  let trophy, title, msg;
+  if (total >= 28) {
+    trophy = "🏆"; title = "All Rounder Champion!";
+    msg = "शानदार! दोनों Rounds में कमाल किया। Class के सबसे तेज़ दिमाग!";
+  } else if (total >= 22) {
+    trophy = "🥇"; title = "बहुत बढ़िया!";
+    msg = "दोनों Rounds अच्छे गए! थोड़ी और मेहनत और Champion बन जाओगे।";
+  } else if (total >= 16) {
+    trophy = "🥈"; title = "अच्छा प्रयास!";
+    msg = "जो subjects कमज़ोर लगे, उन पर और ध्यान दो।";
+  } else {
+    trophy = "💪"; title = "हिम्मत मत हारो!";
+    msg = "अगली बार और बेहतर करोगे। हर गलती से कुछ सीखते हैं!";
+  }
+
+  document.getElementById('resultTrophy').textContent = trophy;
+  document.getElementById('resultTitle').textContent = title;
+  document.getElementById('resultMsg').textContent = msg;
+
+  const container = document.getElementById('subjectScores');
+  container.innerHTML = `<div class="subj-score-card" style="grid-column:span 2; background:rgba(255,215,0,0.05); border-color:rgba(255,215,0,0.2)">
+    <div class="subj-name">Round 1 Score</div>
+    <div class="subj-val" style="color:var(--gold)">${round1Score} / 20</div>
+  </div>
+  <div class="subj-score-card" style="grid-column:span 2; background:rgba(255,215,0,0.05); border-color:rgba(255,215,0,0.2)">
+    <div class="subj-name">Round 2 Score</div>
+    <div class="subj-val" style="color:var(--gold)">${score - round1Score} / 12</div>
+  </div>`;
+
+  const subjects = [
+    { name: "🔬 Science", key: "Science", color: "#00c853" },
+    { name: "🌍 Soc. Sci.", key: "Social Science", color: "#76ff03" },
+    { name: "📖 Hindi", key: "Hindi", color: "#ff6d00" },
+    { name: "🔢 Math", key: "Math", color: "#448aff" }
+  ];
+  subjects.forEach(s => {
+    const [got, tot] = subjectScores[s.key];
+    container.innerHTML += `
+      <div class="subj-score-card">
+        <div class="subj-name">${s.name}</div>
+        <div class="subj-val" style="color:${s.color}">${got} / ${tot}</div>
+      </div>`;
+  });
+}
+
+function restartGame() {
+  document.getElementById('resultScreen').classList.remove('active');
+  document.getElementById('roundBreakScreen').classList.remove('active');
+  document.getElementById('titleScreen').classList.add('active');
+}
+</script>
+</body>
+</html>

@@ -1,0 +1,419 @@
+<!DOCTYPE html>
+<html lang="hi">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>इतिहास Super Quiz — 100 सवाल</title>
+<style>
+@import url('https://fonts.googleapis.com/css2?family=Fredoka+One&family=Baloo+2:wght@400;600;700;800&family=Tiro+Devanagari+Hindi&display=swap');
+:root {
+  --bg:#fff9f0; --pink:#ff6b9d; --orange:#ff9a3c; --yellow:#ffd93d;
+  --green:#6bcb77; --blue:#4d96ff; --purple:#c77dff; --red:#ff4d4d; --dark:#2d2d2d;
+}
+*{margin:0;padding:0;box-sizing:border-box;}
+body{background:var(--bg);font-family:'Baloo 2',sans-serif;min-height:100vh;overflow-x:hidden;}
+.bubbles{position:fixed;inset:0;z-index:0;pointer-events:none;overflow:hidden;}
+.bubble{position:absolute;border-radius:50%;opacity:.12;animation:floatUp linear infinite;}
+@keyframes floatUp{from{transform:translateY(100vh) scale(.5);opacity:.15;}to{transform:translateY(-120px) scale(1);opacity:0;}}
+.container{position:relative;z-index:1;max-width:820px;margin:0 auto;padding:20px;min-height:100vh;display:flex;flex-direction:column;justify-content:center;}
+.screen{display:none;}
+.screen.active{display:flex;flex-direction:column;align-items:center;gap:16px;}
+
+/* TITLE */
+.mascot{font-size:5rem;animation:wiggle 1.5s ease-in-out infinite;}
+@keyframes wiggle{0%,100%{transform:rotate(-8deg);}50%{transform:rotate(8deg);}}
+.game-title{font-family:'Fredoka One',cursive;font-size:2.6rem;background:linear-gradient(135deg,#8B4513,var(--orange),var(--yellow));-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;text-align:center;line-height:1.1;}
+.game-subtitle{font-family:'Tiro Devanagari Hindi',serif;font-size:1rem;color:#888;text-align:center;}
+.chapter-tag{background:linear-gradient(135deg,#8B4513,#D2691E);color:white;padding:10px 28px;border-radius:50px;font-weight:700;font-size:1rem;box-shadow:0 4px 16px rgba(139,69,19,.3);font-family:'Tiro Devanagari Hindi',serif;}
+.info-card{background:white;border-radius:20px;padding:20px 30px;text-align:center;font-size:1rem;color:var(--dark);line-height:1.8;box-shadow:0 8px 30px rgba(0,0,0,.08);border:3px dashed var(--orange);font-family:'Tiro Devanagari Hindi',serif;}
+.play-btn{background:linear-gradient(135deg,#8B4513,var(--orange));color:white;border:none;padding:18px 55px;font-size:1.3rem;font-weight:800;border-radius:50px;cursor:pointer;font-family:'Fredoka One',cursive;letter-spacing:1px;box-shadow:0 8px 25px rgba(139,69,19,.35);transition:all .2s;animation:pulse 2s ease infinite;}
+.play-btn:hover{transform:scale(1.07) translateY(-3px);}
+@keyframes pulse{0%,100%{box-shadow:0 8px 25px rgba(139,69,19,.35);}50%{box-shadow:0 8px 40px rgba(139,69,19,.6);}}
+
+/* GAME */
+.top-strip{width:100%;display:flex;align-items:center;justify-content:space-between;gap:10px;}
+.q-badge{background:var(--purple);color:white;font-family:'Fredoka One',cursive;font-size:1rem;padding:8px 18px;border-radius:50px;box-shadow:0 4px 12px rgba(199,125,255,.35);}
+.subj-chip{padding:8px 18px;border-radius:50px;font-weight:700;font-size:.9rem;color:white;background:linear-gradient(135deg,#8B4513,#D2691E);box-shadow:0 4px 12px rgba(139,69,19,.3);}
+.score-chip{background:var(--green);color:white;font-family:'Fredoka One',cursive;font-size:1rem;padding:8px 18px;border-radius:50px;box-shadow:0 4px 12px rgba(107,203,119,.35);}
+
+/* Progress bar */
+.progress-wrap{width:100%;height:8px;background:#e0e0e0;border-radius:4px;overflow:hidden;}
+.progress-bar{height:100%;background:linear-gradient(90deg,#8B4513,var(--orange));border-radius:4px;transition:width .5s ease;}
+
+.q-card{width:100%;background:white;border-radius:24px;padding:28px 30px;text-align:center;box-shadow:0 10px 40px rgba(0,0,0,.1);border-top:6px solid var(--orange);position:relative;overflow:hidden;}
+.q-card::before{content:'📜';position:absolute;right:20px;top:10px;font-size:4rem;opacity:.1;line-height:1;}
+.q-num{font-family:'Fredoka One',cursive;font-size:.85rem;color:#8B4513;margin-bottom:8px;opacity:.7;}
+.q-text{font-family:'Tiro Devanagari Hindi',serif;font-size:1.25rem;color:var(--dark);line-height:1.7;position:relative;}
+
+.opts-grid{width:100%;display:grid;grid-template-columns:1fr 1fr;gap:12px;}
+.opt-btn{background:white;border:3px solid #e8e8e8;border-radius:16px;padding:14px 16px;font-size:.95rem;font-family:'Tiro Devanagari Hindi',serif;color:var(--dark);cursor:pointer;display:flex;align-items:center;gap:12px;text-align:left;transition:all .2s;box-shadow:0 4px 12px rgba(0,0,0,.06);}
+.opt-btn:hover:not(:disabled){transform:translateY(-3px);box-shadow:0 8px 20px rgba(0,0,0,.12);border-color:var(--orange);}
+.opt-btn:disabled{cursor:default;}
+.opt-letter{width:34px;height:34px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-family:'Fredoka One',cursive;font-size:1rem;flex-shrink:0;color:white;}
+.opt-btn:nth-child(1) .opt-letter{background:var(--blue);}
+.opt-btn:nth-child(2) .opt-letter{background:var(--pink);}
+.opt-btn:nth-child(3) .opt-letter{background:var(--orange);}
+.opt-btn:nth-child(4) .opt-letter{background:var(--purple);}
+.opt-btn.correct{background:#e8fdf0;border-color:var(--green);animation:correctBounce .5s ease;}
+.opt-btn.correct .opt-letter{background:var(--green)!important;}
+.opt-btn.wrong{background:#fff0f0;border-color:var(--red);animation:wrongShake .4s ease;}
+.opt-btn.wrong .opt-letter{background:var(--red)!important;}
+.opt-btn.reveal{background:#e8fdf0;border-color:var(--green);opacity:.75;}
+.opt-btn.reveal .opt-letter{background:var(--green)!important;}
+@keyframes correctBounce{0%{transform:scale(1);}40%{transform:scale(1.04);}100%{transform:scale(1);}}
+@keyframes wrongShake{0%,100%{transform:translateX(0);}25%{transform:translateX(-8px);}75%{transform:translateX(8px);}}
+
+.feedback-box{width:100%;border-radius:16px;padding:14px 20px;font-family:'Tiro Devanagari Hindi',serif;font-size:.95rem;line-height:1.6;display:none;animation:fadeSlide .35s ease;}
+.feedback-box.show{display:block;}
+.feedback-box.fb-right{background:#e8fdf0;border:2px solid var(--green);color:#1a6b2a;}
+.feedback-box.fb-wrong{background:#fff0f0;border:2px solid var(--red);color:#8b0000;}
+@keyframes fadeSlide{from{opacity:0;transform:translateY(8px);}to{opacity:1;transform:translateY(0);}}
+
+.lifelines{display:flex;gap:10px;justify-content:center;flex-wrap:wrap;width:100%;}
+.ll-btn{background:white;border:2px solid #e0e0e0;border-radius:50px;padding:10px 22px;font-family:'Baloo 2',sans-serif;font-size:.9rem;font-weight:700;cursor:pointer;color:var(--dark);transition:all .2s;box-shadow:0 4px 10px rgba(0,0,0,.07);display:flex;align-items:center;gap:7px;}
+.ll-btn:hover:not(:disabled){transform:translateY(-2px);box-shadow:0 6px 16px rgba(0,0,0,.12);}
+.ll-btn:disabled{opacity:.3;cursor:not-allowed;}
+.ll-btn.ll-50{border-color:var(--orange);color:var(--orange);}
+.ll-btn.ll-aud{border-color:var(--blue);color:var(--blue);}
+.ll-btn.ll-skp{border-color:var(--purple);color:var(--purple);}
+
+.next-btn{background:linear-gradient(135deg,var(--green),#3aaf58);color:white;border:none;padding:14px 44px;font-size:1.1rem;font-weight:800;border-radius:50px;cursor:pointer;font-family:'Fredoka One',cursive;letter-spacing:1px;box-shadow:0 6px 20px rgba(107,203,119,.4);transition:all .2s;display:none;}
+.next-btn.show{display:block;animation:popIn .3s ease;}
+.next-btn:hover{transform:scale(1.05);}
+@keyframes popIn{from{transform:scale(0);opacity:0;}to{transform:scale(1);opacity:1;}}
+
+/* RESULT */
+.confetti-row{font-size:2.5rem;letter-spacing:8px;animation:spread 3s ease infinite;}
+@keyframes spread{0%,100%{letter-spacing:8px;}50%{letter-spacing:14px;}}
+.r-title{font-family:'Fredoka One',cursive;font-size:2.8rem;background:linear-gradient(135deg,#8B4513,var(--orange));-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;}
+.r-score{font-family:'Fredoka One',cursive;font-size:4rem;color:var(--dark);}
+.r-score span{color:var(--orange);}
+.r-msg{font-family:'Tiro Devanagari Hindi',serif;font-size:1.05rem;color:#555;line-height:1.8;max-width:440px;text-align:center;}
+.result-cards{display:grid;grid-template-columns:1fr 1fr;gap:12px;width:100%;max-width:440px;}
+.r-card{background:white;border-radius:16px;padding:16px;text-align:center;box-shadow:0 6px 20px rgba(0,0,0,.08);}
+.r-card .rname{font-size:.85rem;color:#888;margin-bottom:6px;font-family:'Tiro Devanagari Hindi',serif;}
+.r-card .rval{font-family:'Fredoka One',cursive;font-size:1.8rem;}
+.replay-btn{background:linear-gradient(135deg,#8B4513,var(--orange));color:white;border:none;padding:16px 48px;font-size:1.1rem;font-weight:800;border-radius:50px;cursor:pointer;font-family:'Fredoka One',cursive;letter-spacing:1px;box-shadow:0 8px 25px rgba(139,69,19,.35);transition:all .2s;}
+.replay-btn:hover{transform:scale(1.06);}
+
+/* Poll */
+.overlay{position:fixed;inset:0;background:rgba(0,0,0,.5);z-index:100;display:none;align-items:center;justify-content:center;backdrop-filter:blur(4px);}
+.overlay.show{display:flex;}
+.poll-card{background:white;border-radius:24px;padding:30px;width:90%;max-width:460px;text-align:center;animation:popIn .3s ease;box-shadow:0 20px 60px rgba(0,0,0,.2);}
+.poll-card h3{font-family:'Fredoka One',cursive;font-size:1.4rem;color:var(--blue);margin-bottom:20px;}
+.poll-rows{display:flex;flex-direction:column;gap:12px;margin-bottom:20px;}
+.poll-row{display:flex;align-items:center;gap:10px;}
+.poll-lbl{width:26px;font-family:'Fredoka One',cursive;color:var(--dark);}
+.poll-track{flex:1;height:30px;background:#f0f0f0;border-radius:8px;overflow:hidden;}
+.poll-fill{height:100%;border-radius:8px;display:flex;align-items:center;padding-left:10px;font-size:.8rem;font-weight:700;color:white;transition:width 1s ease;}
+.poll-pct{width:40px;font-weight:700;font-size:.9rem;text-align:right;}
+.close-poll-btn{background:#f0f0f0;border:none;border-radius:50px;padding:10px 28px;font-family:'Baloo 2',sans-serif;font-weight:700;cursor:pointer;color:var(--dark);}
+</style>
+</head>
+<body>
+<div class="bubbles" id="bc"></div>
+<div class="container">
+
+  <!-- TITLE -->
+  <div class="screen active" id="titleScreen">
+    <div class="mascot">🏛️</div>
+    <div class="game-title">इतिहास<br>Super Quiz!</div>
+    <div class="game-subtitle">यूरोप का एकीकरण — Class 9 History</div>
+    <div class="chapter-tag">📖 100 वस्तुनिष्ठ प्रश्न — BSTBPC</div>
+    <div class="info-card">
+      कुल <strong>100 सवाल</strong> — परीक्षा में आए हुए<br>
+      3 Lifelines: ✂️ 50-50 &nbsp; 👥 Audience &nbsp; ⏭️ Skip<br>
+      <small style="color:#aaa">Marg Darshan Point — Class 9</small>
+    </div>
+    <button class="play-btn" onclick="startGame()">▶ खेलना शुरू करें!</button>
+  </div>
+
+  <!-- GAME -->
+  <div class="screen" id="gameScreen">
+    <div class="top-strip">
+      <div class="q-badge" id="qBadge">Q 1/100</div>
+      <div class="subj-chip">📜 इतिहास</div>
+      <div class="score-chip">⭐ <span id="scoreDisp">0</span></div>
+    </div>
+    <div class="progress-wrap"><div class="progress-bar" id="progressBar" style="width:1%"></div></div>
+    <div class="q-card">
+      <div class="q-num" id="qNum">प्रश्न 1</div>
+      <div class="q-text" id="qText">...</div>
+    </div>
+    <div class="opts-grid" id="optsGrid"></div>
+    <div class="feedback-box" id="feedbackBox"><span id="fbIcon"></span> <span id="fbText"></span></div>
+    <div class="lifelines">
+      <button class="ll-btn ll-50" id="ll50" onclick="use5050()">✂️ 50-50</button>
+      <button class="ll-btn ll-aud" id="llAud" onclick="useAudience()">👥 Audience</button>
+      <button class="ll-btn ll-skp" id="llSkp" onclick="useSkip()">⏭️ Skip</button>
+    </div>
+    <button class="next-btn" id="nextBtn" onclick="nextQ()">अगला सवाल →</button>
+  </div>
+
+  <!-- RESULT -->
+  <div class="screen" id="resultScreen" style="text-align:center">
+    <div class="confetti-row" id="confettiRow">🎉🌟🎊</div>
+    <div class="r-title" id="rTitle">शाबाश!</div>
+    <div class="r-score"><span id="rScore">0</span> / 100 ⭐</div>
+    <div class="r-msg" id="rMsg"></div>
+    <div class="result-cards" id="resultCards"></div>
+    <button class="replay-btn" onclick="restartGame()">🔄 फिर से खेलें</button>
+  </div>
+</div>
+
+<!-- Poll -->
+<div class="overlay" id="pollOverlay">
+  <div class="poll-card">
+    <h3>👥 Audience की राय</h3>
+    <div class="poll-rows" id="pollRows"></div>
+    <button class="close-poll-btn" onclick="closePoll()">ठीक है!</button>
+  </div>
+</div>
+
+<script>
+// Bubbles
+const bC=['#ff6b9d','#ff9a3c','#ffd93d','#6bcb77','#4d96ff','#c77dff'];
+const bc=document.getElementById('bc');
+for(let i=0;i<18;i++){
+  const b=document.createElement('div');b.className='bubble';
+  const s=Math.random()*80+30;
+  b.style.cssText=`width:${s}px;height:${s}px;left:${Math.random()*100}%;bottom:-${s}px;background:${bC[Math.floor(Math.random()*bC.length)]};animation-duration:${Math.random()*12+8}s;animation-delay:${Math.random()*8}s;`;
+  bc.appendChild(b);
+}
+
+const questions = [
+  // 1-12: किताब के सवाल (MCQ with options)
+  {q:"इटली एवं जर्मनी वर्तमान में किस महादेश के अंतर्गत आते हैं?",opts:["उत्तरी अमेरिका","दक्षिणी अमेरिका","यूरोप","पश्चिमी एशिया"],ans:2,tip:"इटली और जर्मनी दोनों यूरोप महाद्वीप में हैं।"},
+  {q:"फ्रांस में किस शासक वंश की पुनःस्थापना वियना कांग्रेस द्वारा की गई थी?",opts:["हैब्सबर्ग","ऑर्लिया वंश","बूर्बों वंश","जार शाही"],ans:2,tip:"1815 की वियना कांग्रेस के बाद फ्रांस में बूर्बों वंश को फिर से राजगद्दी दी गई।"},
+  {q:"मेजिनी का सम्बन्ध किस संगठन से था?",opts:["लाल सेना","कबोंनरी","फिलिक हेटारिया","डायट"],ans:1,tip:"कबोंनरी (Carbonari) — इटली का गुप्त क्रांतिकारी संगठन।"},
+  {q:"इटली एवं जर्मनी के एकीकरण के विरुद्ध कौन था?",opts:["इंग्लैंड","रूस","ऑस्ट्रिया","प्रशा"],ans:2,tip:"ऑस्ट्रिया के मेटरनिख राष्ट्रवाद और एकीकरण के सबसे बड़े विरोधी थे।"},
+  {q:"'काउंट काबूर' को विक्टर इमैनुएल ने किस पद पर नियुक्त किया?",opts:["सेनापति","फ्रांस में राजदूत","प्रधानमंत्री","गृहमंत्री"],ans:2,tip:"काउंट काबूर सार्डिनिया-पिडमॉण्ट के प्रधानमंत्री बने।"},
+  {q:"गैरीबाल्डी पेशे से क्या था?",opts:["सिपाही","किसान","जमींदार","नाविक"],ans:3,tip:"गैरीबाल्डी पेशे से नाविक थे। 'लाल कमीज़' सेना से दक्षिणी इटली जीता।"},
+  {q:"जर्मन राईन राज्य का निर्माण किसने किया था?",opts:["लुई 18वां","नेपोलियन बोनापार्ट","नेपोलियन III","बिस्मार्क"],ans:1,tip:"नेपोलियन बोनापार्ट ने जर्मन राज्यों को पुनर्गठित कर 'राईन संघ' बनाया।"},
+  {q:"'जालवेरिन' किसकी संस्था थी?",opts:["क्रांतिकारियों की","व्यापारियों की","विद्वानों की","पादरी सामतों की"],ans:1,tip:"जालवेरिन (Zollverein) एक जर्मन व्यापारिक संघ था।"},
+  {q:"'रक्त एवं लौह' की नीति का अवलम्बन किसने किया था?",opts:["मेजिनी","हिटलर","बिस्मार्क","विलियम-I"],ans:2,tip:"बिस्मार्क ने कहा — 'जर्मनी का एकीकरण रक्त और लौह से होगा।'"},
+  {q:"फ्रैंकफर्ट की संधि कब हुई?",opts:["1864","1866","1870","1871"],ans:3,tip:"फ्रैंकफर्ट की संधि 1871 में फ्रांस-प्रशा युद्ध के बाद हुई।"},
+  {q:"यूरोप वासियों के लिए किस देश का साहित्य एवं ज्ञान-विज्ञान प्रेरणास्रोत रहा?",opts:["जर्मनी","यूनान","तुर्की","इंग्लैंड"],ans:1,tip:"प्राचीन यूनान की सभ्यता यूरोपीय पुनर्जागरण की प्रेरणा थी।"},
+  {q:"1829 ई० की एड्रियानोपुल की संधि किस देश के साथ हुई?",opts:["तुर्की","यूनान","हंगरी","पोलैंड"],ans:0,tip:"1829 में रूस और तुर्की (ऑटोमन साम्राज्य) के बीच एड्रियानोपुल की संधि हुई।"},
+
+  // 13-100: PDF के सवाल (converted to MCQ)
+  {q:"निम्नलिखित में से कौन जर्मन चांसलर था?",opts:["मेजिनी","बिस्मार्क","गैरीबाल्डी","काबूर"],ans:1,tip:"बिस्मार्क जर्मनी के प्रसिद्ध चांसलर थे जिन्होंने जर्मन एकीकरण पूरा किया।"},
+  {q:"नेपल्स की क्रांति कब हुई थी?",opts:["1815","1821","1830","1848"],ans:1,tip:"नेपल्स की क्रांति 1821 में हुई थी।"},
+  {q:"सेडॉन के युद्ध में किसकी पराजय हुई थी?",opts:["जर्मनी","इटली","फ्रांस","ऑस्ट्रिया"],ans:2,tip:"सेडॉन के युद्ध में फ्रांस की पराजय हुई थी।"},
+  {q:"निम्न में किसने अपने देश में अनिवार्य सैन्य सेवा लागू की थी?",opts:["मेजिनी","बिस्मार्क","काबूर","गैरीबाल्डी"],ans:1,tip:"बिस्मार्क ने अपने देश में अनिवार्य सैन्य सेवा लागू की थी।"},
+  {q:"1853-54 के क्रिमिया युद्ध में काबूर ने किस देश की ओर से युद्ध में सम्मिलित होने की घोषणा की?",opts:["इंग्लैंड","ऑस्ट्रिया","फ्रांस","रूस"],ans:2,tip:"काबूर ने फ्रांस की ओर से क्रिमिया युद्ध में भाग लिया।"},
+  {q:"यूनानी स्वतंत्रता संग्राम के दौरान तुर्की के समर्थन में कौन था?",opts:["फ्रांस","मिस","इंग्लैंड","रूस"],ans:1,tip:"यूनानी स्वतंत्रता संग्राम के दौरान तुर्की के समर्थन में मिस (Egypt) था।"},
+  {q:"सन् 1870 में फ्रांस और प्रशा के बीच युद्ध कहाँ हुआ था?",opts:["वर्साय","बर्लिन","सेडॉन","फ्रैंकफर्ट"],ans:2,tip:"1870 में फ्रांस-प्रशा युद्ध सेडॉन में हुआ।"},
+  {q:"किस युद्ध के बाद जर्मनी का एकीकरण हुआ?",opts:["क्रिमिया का युद्ध","सेडॉन का युद्ध","सेडोवा का युद्ध","नेपल्स का युद्ध"],ans:1,tip:"सेडॉन के युद्ध के बाद जर्मनी का एकीकरण हुआ।"},
+  {q:"'यूरोप का मरीज' किसे कहा जाता है?",opts:["फ्रांस","जर्मनी","तुर्की","ऑस्ट्रिया"],ans:2,tip:"तुर्की (ऑटोमन साम्राज्य) को 'यूरोप का मरीज' कहा जाता था।"},
+  {q:"'यंग-यूरोप' का संस्थापक कौन था?",opts:["गैरीबाल्डी","बिस्मार्क","मेजिनी","काबूर"],ans:2,tip:"मेजिनी ने 'यंग यूरोप' की स्थापना की थी।"},
+  {q:"टीपू सुल्तान शासक थे-",opts:["हैदराबाद","मैसूर","बंगाल","मराठा"],ans:1,tip:"टीपू सुल्तान मैसूर के शासक थे।"},
+  {q:"फ्रैंकफर्ट की संधि पर हस्ताक्षर कब हुई थी?",opts:["1864 में","1866 में","1870 में","1871 में"],ans:3,tip:"फ्रैंकफर्ट की संधि 1871 में हुई थी।"},
+  {q:"1871 में कौन-सी संधि हुई थी?",opts:["प्राग की संधि","वियना की संधि","फ्रैंकफर्ट की संधि","एड्रियानोपुल की संधि"],ans:2,tip:"1871 में फ्रैंकफर्ट की संधि हुई थी।"},
+  {q:"1830 की क्रांति के बाद फ्रांस में किस प्रकार का शासन स्थापित हुआ?",opts:["राजतंत्र","गणतंत्र","संवैधानिक राजतंत्र","सैन्य शासन"],ans:2,tip:"1830 की क्रांति के बाद फ्रांस में संवैधानिक राजतंत्र स्थापित हुआ।"},
+  {q:"जर्मनी के एकीकरण के लिए कौन उत्तरदायी था?",opts:["मेजिनी","काबूर","गैरीबाल्डी","बिस्मार्क"],ans:3,tip:"बिस्मार्क जर्मनी के एकीकरण के लिए उत्तरदायी था।"},
+  {q:"इटली के एकीकरण में निम्न में से किसका संबंध नहीं है?",opts:["मेजिनी","काबूर","गैरीबाल्डी","बिस्मार्क"],ans:3,tip:"बिस्मार्क जर्मनी के एकीकरण से जुड़े थे, इटली से नहीं।"},
+  {q:"इटली और जर्मनी के एकीकरण के विरुद्ध निम्न में कौन था?",opts:["इंग्लैंड","रूस","ऑस्ट्रिया","प्रशा"],ans:2,tip:"ऑस्ट्रिया इटली और जर्मनी के एकीकरण के विरुद्ध था।"},
+  {q:"जर्मनी के एकीकरण का प्रमुख वास्तुकार कौन था?",opts:["मेजिनी","काबूर","गैरीबाल्डी","बिस्मार्क"],ans:3,tip:"बिस्मार्क जर्मनी के एकीकरण का प्रमुख वास्तुकार था।"},
+  {q:"फ्रैंकफर्ट की संधि किस वर्ष हुई थी?",opts:["1864","1866","1869","1871"],ans:3,tip:"फ्रैंकफर्ट की संधि 1871 में हुई।"},
+  {q:"जल्वेरिन संबंधित था?",opts:["इटली के व्यापारियों से","फ्रांस के व्यापारियों से","जर्मन व्यापारियों से","ऑस्ट्रिया के व्यापारियों से"],ans:2,tip:"जालवेरिन जर्मन व्यापारिक संघ था।"},
+  {q:"सार्डिनिया का राजा कौन था?",opts:["नेपोलियन III","बिस्मार्क","विक्टर इमैनुएल","मेजिनी"],ans:2,tip:"सार्डिनिया का राजा विक्टर इमैनुएल था।"},
+  {q:"काउंट काबूर को विक्टर इमैनुएल ने किस पद पर नियुक्त किया?",opts:["सेनापति","राजदूत","प्रधानमंत्री","गृहमंत्री"],ans:2,tip:"काबूर को प्रधानमंत्री नियुक्त किया गया।"},
+  {q:"वियना सम्मेलन हुआ था?",opts:["1810 में","1815 में","1820 में","1830 में"],ans:1,tip:"वियना सम्मेलन 1815 में हुआ था।"},
+  {q:"निम्न में से किसके योगदान से इटली का एकीकरण पूर्ण हुआ?",opts:["केवल मेजिनी","केवल काबूर","केवल गैरीबाल्डी","मेजिनी, काबूर, विक्टर इमैनुएल"],ans:3,tip:"मेजिनी, काउंट काबूर और विक्टर इमैनुएल तीनों के योगदान से इटली का एकीकरण पूर्ण हुआ।"},
+  {q:"'रक्त और लौह' की नीति का अवलम्बन किसने किया?",opts:["मेजिनी","हिटलर","बिस्मार्क","काबूर"],ans:2,tip:"बिस्मार्क ने 'रक्त और लौह' की नीति अपनाई।"},
+  {q:"जर्मन राईन राज्य का निर्माण किसने किया था?",opts:["बिस्मार्क","विलियम I","नेपोलियन बोनापार्ट","मेटरनिख"],ans:2,tip:"नेपोलियन बोनापार्ट ने जर्मन राईन राज्य का निर्माण किया।"},
+  {q:"लुई सोलहवें को फाँसी कब दी गई?",opts:["1789","1791","1793","1795"],ans:2,tip:"लुई सोलहवें को 1793 में फाँसी दी गई।"},
+  {q:"हीगेल किस देश का दार्शनिक था?",opts:["फ्रांस","इटली","जर्मनी","इंग्लैंड"],ans:2,tip:"हीगेल जर्मनी का प्रसिद्ध दार्शनिक था।"},
+  {q:"वियना कांग्रेस का मुख्य उद्देश्य क्या था?",opts:["नए राज्य बनाना","राष्ट्रवाद फैलाना","राजतंत्रों को पुनःस्थापित करना","व्यापार बढ़ाना"],ans:2,tip:"वियना कांग्रेस का मुख्य उद्देश्य राजतंत्रों को पुनःस्थापित करना था।"},
+  {q:"फ्रांसीसी क्रांति कब हुई?",opts:["1776","1783","1789","1799"],ans:2,tip:"फ्रांसीसी क्रांति 1789 में हुई।"},
+  {q:"मेजिनी का संबंध किस संगठन से था?",opts:["यंग इटली","कबोंनरी","लाल सेना","डायट"],ans:1,tip:"मेजिनी का संबंध कार्बोनारी (कबोंनरी) संगठन से था।"},
+  {q:"राष्ट्रीय आंदोलन का केंद्र जेना विश्वविद्यालय कहाँ स्थित है?",opts:["इटली","फ्रांस","जर्मनी","ऑस्ट्रिया"],ans:2,tip:"जेना विश्वविद्यालय जर्मनी में स्थित है।"},
+  {q:"कोसूथ का संबंध किस देश से है?",opts:["इटली","जर्मनी","हंगरी","पोलैंड"],ans:2,tip:"कोसूथ हंगरी के राष्ट्रवादी नेता थे।"},
+  {q:"यूरोपीय सभ्यता का पालना किसे कहा जाता है?",opts:["रोम","एथेंस","यूनान","मिस्र"],ans:2,tip:"यूनान को यूरोपीय सभ्यता का पालना कहा जाता है।"},
+  {q:"प्रथम जेनेवा कन्वेंशन कब हुआ था?",opts:["1860","1862","1864","1866"],ans:2,tip:"प्रथम जेनेवा कन्वेंशन 1864 में हुआ था।"},
+  {q:"इटली का एकीकरण कब पूर्ण हुआ?",opts:["1866","1868","1870","1871"],ans:3,tip:"इटली का एकीकरण 1871 में पूर्ण हुआ।"},
+  {q:"लुई फिलिप किस देश का शासक था?",opts:["इंग्लैंड","फ्रांस","जर्मनी","इटली"],ans:1,tip:"लुई फिलिप फ्रांस का शासक था।"},
+  {q:"1871 में विलियम प्रथम कहाँ का सम्राट बना?",opts:["इटली","फ्रांस","जर्मनी","ऑस्ट्रिया"],ans:2,tip:"1871 में विलियम प्रथम जर्मनी का सम्राट बना।"},
+  {q:"बोहेमिया निम्न में से किस देश के अधीन था?",opts:["प्रशा","जर्मनी","ऑस्ट्रिया","रूस"],ans:2,tip:"बोहेमिया ऑस्ट्रिया के अधीन था।"},
+  {q:"किस संधि द्वारा जर्मनी का एकीकरण पूरा हुआ?",opts:["प्राग की संधि","वियना की संधि","फ्रैंकफर्ट की संधि","एड्रियानोपुल की संधि"],ans:2,tip:"फ्रैंकफर्ट की संधि द्वारा जर्मनी का एकीकरण पूरा हुआ।"},
+  {q:"किस युद्ध के बाद जर्मनी का एकीकरण पूरा हुआ?",opts:["क्रिमिया युद्ध","सेडोवा युद्ध","सीडान युद्ध","नेपल्स युद्ध"],ans:2,tip:"सीडान युद्ध के बाद जर्मनी का एकीकरण पूरा हुआ।"},
+  {q:"यूरोप में राष्ट्रवाद की शुरूआत कहाँ से हुई?",opts:["इंग्लैंड","जर्मनी","इटली","फ्रांस"],ans:3,tip:"यूरोप में राष्ट्रवाद की शुरूआत फ्रांस से हुई।"},
+  {q:"राइन राज्य संघ की स्थापना किसने की?",opts:["बिस्मार्क","मेटरनिख","नेपोलियन","विलियम I"],ans:2,tip:"राइन राज्य संघ की स्थापना नेपोलियन ने की।"},
+  {q:"यूनान इनमें किस देश के अधीन था?",opts:["फ्रांस","ऑस्ट्रिया","तुर्की","रूस"],ans:2,tip:"यूनान तुर्की (ऑटोमन साम्राज्य) के अधीन था।"},
+  {q:"19वीं शताब्दी में यूरोप में राष्ट्रवाद के विकास का क्या परिणाम हुआ?",opts:["उपनिवेश बढ़े","व्यापार बढ़ा","राष्ट्रीय राज्यों की स्थापना","युद्ध समाप्त हुए"],ans:2,tip:"19वीं शताब्दी में यूरोप में राष्ट्रवाद के विकास का परिणाम राष्ट्रीय राज्यों की स्थापना हुई।"},
+  {q:"1789 की फ्रांसीसी क्रांति के समय वहाँ किस राजवंश का शासन था?",opts:["हैब्सबर्ग वंश","ऑर्लिया वंश","बूर्बों वंश का","जार शाही"],ans:2,tip:"1789 की फ्रांसीसी क्रांति के समय बूर्बों वंश का शासन था।"},
+  {q:"नेपोलियन संहिता किस वर्ष लागू की गई?",opts:["1800 में","1802 में","1804 में","1806 में"],ans:2,tip:"नेपोलियन संहिता 1804 में लागू की गई।"},
+  {q:"मार्सिले किस देश का राष्ट्रगीत था?",opts:["इटली","जर्मनी","फ्रांस","इंग्लैंड"],ans:2,tip:"मार्सिले फ्रांस का राष्ट्रगीत था।"},
+  {q:"वियना कांग्रेस कब हुआ था?",opts:["1810 में","1812 में","1815 में","1820 में"],ans:2,tip:"वियना कांग्रेस 1815 में हुआ था।"},
+  {q:"वियना किसकी राजधानी थी?",opts:["जर्मनी","प्रशा","ऑस्ट्रिया","हंगरी"],ans:2,tip:"वियना ऑस्ट्रिया की राजधानी थी।"},
+  {q:"वियना सम्मेलन (कांग्रेस) की अध्यक्षता किसने की थी?",opts:["नेपोलियन","बिस्मार्क","मेटरनिक","काबूर"],ans:2,tip:"वियना सम्मेलन की अध्यक्षता मेटरनिक ने की थी।"},
+  {q:"निम्नलिखित में वियना सम्मेलन (कांग्रेस) में कौन राष्ट्र सम्मिलित नहीं था?",opts:["फ्रांस","ऑस्ट्रिया","रूस","जर्मनी"],ans:3,tip:"जर्मनी वियना सम्मेलन में सम्मिलित नहीं था।"},
+  {q:"वियना सम्मेलन (कांग्रेस) में पवित्र संघ की योजना किसने प्रस्तुत की थी?",opts:["मेटरनिक","बिस्मार्क","रूस ने","नेपोलियन"],ans:2,tip:"वियना सम्मेलन में पवित्र संघ की योजना रूस ने प्रस्तुत की थी।"},
+  {q:"मेटरनिक कौन था?",opts:["फ्रांस का प्रधानमंत्री","इटली का राजा","ऑस्ट्रिया का चांसलर","जर्मनी का सम्राट"],ans:2,tip:"मेटरनिक ऑस्ट्रिया का चांसलर था।"},
+  {q:"मेटरनिक व्यवस्था का उद्देश्य क्या था?",opts:["नए राज्य बनाना","राष्ट्रवाद फैलाना","पुरातन व्यवस्था की पुनर्स्थापना करना","व्यापार बढ़ाना"],ans:2,tip:"मेटरनिक व्यवस्था का उद्देश्य पुरातन व्यवस्था की पुनर्स्थापना करना था।"},
+  {q:"'जब फ्रांस छींकता है तब बाकी यूरोप को सर्दी-जुकाम हो जाता है' यह किसने कहा था?",opts:["बिस्मार्क","काबूर","मेटरनिक","मेजिनी"],ans:2,tip:"यह प्रसिद्ध कथन मेटरनिक ने कहा था।"},
+  {q:"कार्ल्सबाद आज्ञप्तियाँ द्वारा मेटरनिक ने क्या किया?",opts:["उदारवाद पर रोक लगाई","व्यापार खोला","युद्ध किया","संधि की"],ans:0,tip:"कार्ल्सबाद आज्ञप्तियों द्वारा मेटरनिक ने उदारवाद पर रोक लगाई।"},
+  {q:"मेजिनी को 'हमारी सामाजिक व्यवस्था का सबसे खतरनाक दुश्मन' किसने कहा था?",opts:["बिस्मार्क","काबूर","मेटरनिक","विलियम I"],ans:2,tip:"मेटरनिक ने मेजिनी को 'हमारी सामाजिक व्यवस्था का सबसे खतरनाक दुश्मन' कहा था।"},
+  {q:"यूरोपवासियों पर सबसे अधिक किस देश के साहित्य, कला और ज्ञान-विज्ञान का प्रभाव पड़ा?",opts:["जर्मनी के","फ्रांस के","यूनान के","इंग्लैंड के"],ans:2,tip:"यूरोपवासियों पर सबसे अधिक यूनान के साहित्य, कला और ज्ञान-विज्ञान का प्रभाव पड़ा।"},
+  {q:"'यूरोपीय सभ्यता का पालना' किसे कहा जाता था?",opts:["रोम को","एथेंस को","यूनान को","मिस्र को"],ans:2,tip:"यूनान को 'यूरोपीय सभ्यता का पालना' कहा जाता था।"},
+  {q:"नावारिनो की खाड़ी युद्ध में तुर्की का साथ किस देश ने दिया था?",opts:["फ्रांस","मिस","रूस","इंग्लैंड"],ans:1,tip:"नावारिनो की खाड़ी युद्ध में तुर्की का साथ मिस (Egypt) ने दिया था।"},
+  {q:"एड्रियानोपुल की संधि (1829) किनके बीच हुई थी?",opts:["फ्रांस और रूस के बीच","तुर्की और रूस के बीच","इटली और फ्रांस के बीच","ऑस्ट्रिया और रूस के बीच"],ans:1,tip:"एड्रियानोपुल की संधि (1829) तुर्की और रूस के बीच हुई थी।"},
+  {q:"यूनान की स्वतंत्रता संग्राम में किसकी पराजय हुई?",opts:["रूस की","फ्रांस की","तुर्की की","इंग्लैंड की"],ans:2,tip:"यूनान की स्वतंत्रता संग्राम में तुर्की की पराजय हुई।"},
+  {q:"किस संधि द्वारा स्वतंत्र यूनान राष्ट्र की स्थापना हुई?",opts:["वियना की संधि","फ्रैंकफर्ट की संधि","कुस्तुनतुनिया की संधि","एड्रियानोपुल की संधि"],ans:2,tip:"कुस्तुनतुनिया की संधि द्वारा स्वतंत्र यूनान राष्ट्र की स्थापना हुई।"},
+  {q:"विक्टर इमैनुएल ने किसे प्रधानमंत्री नियुक्त की?",opts:["मेजिनी को","गैरीबाल्डी को","काउंट काबूर को","बिस्मार्क को"],ans:2,tip:"विक्टर इमैनुएल ने काउंट काबूर को प्रधानमंत्री नियुक्त किया।"},
+  {q:"'यूरोप का मरीज' किसे कहा जाता था?",opts:["फ्रांस को","जर्मनी को","ऑस्ट्रिया को","तुर्की को"],ans:3,tip:"तुर्की को 'यूरोप का मरीज' कहा जाता था।"},
+  {q:"'यंग इटली' की स्थापना किसने की थी?",opts:["गैरीबाल्डी ने","काबूर ने","मेजिनी ने","विक्टर इमैनुएल ने"],ans:2,tip:"'यंग इटली' की स्थापना मेजिनी ने की थी।"},
+  {q:"क्रीमिया के युद्ध में संयुक्त सेना का साथ किसने दिया था?",opts:["मेजिनी ने","गैरीबाल्डी ने","काबूर ने","विक्टर इमैनुएल ने"],ans:2,tip:"क्रीमिया के युद्ध में काबूर ने संयुक्त सेना का साथ दिया था।"},
+  {q:"'लाल कुर्ती' का गठन किसने किया था?",opts:["मेजिनी ने","काबूर ने","गैरीबाल्डी ने","विक्टर इमैनुएल ने"],ans:2,tip:"'लाल कुर्ती' (Red Shirts) का गठन गैरीबाल्डी ने किया था।"},
+  {q:"'फ्रेंड्स ऑफ इटली' नामक संस्था का गठन किसने किया था?",opts:["गैरीबाल्डी ने","काबूर ने","मेजिनी ने","विक्टर इमैनुएल ने"],ans:2,tip:"'फ्रेंड्स ऑफ इटली' नामक संस्था का गठन मेजिनी ने किया था।"},
+  {q:"'नव गुएल्फ' आंदोलन कहाँ हुआ था?",opts:["जर्मनी में","फ्रांस में","इटली में","ऑस्ट्रिया में"],ans:2,tip:"'नव गुएल्फ' आंदोलन इटली में हुआ था।"},
+  {q:"कार्बोनारी की स्थापना किस वर्ष हुई थी?",opts:["1800 में","1806 में","1810 में","1815 में"],ans:2,tip:"कार्बोनारी की स्थापना 1810 में हुई थी।"},
+  {q:"जर्मनी के एकीकरण में किसकी महत्वपूर्ण भूमिका थी?",opts:["मेजिनी की","काबूर की","गैरीबाल्डी की","बिस्मार्क की"],ans:3,tip:"जर्मनी के एकीकरण में बिस्मार्क की महत्वपूर्ण भूमिका थी।"},
+  {q:"39 राज्यों के जर्मन महासंघ की स्थापना किसने की थी?",opts:["बिस्मार्क ने","विलियम I ने","नेपोलियन ने","मेटरनिक ने"],ans:3,tip:"39 राज्यों के जर्मन महासंघ की स्थापना मेटरनिक ने की थी।"},
+  {q:"बिस्मार्क प्रशा का प्रधानमंत्री किस वर्ष बना था?",opts:["1860 में","1862 में","1864 में","1866 में"],ans:1,tip:"बिस्मार्क प्रशा का प्रधानमंत्री 1862 में बना था।"},
+  {q:"जर्मनी के एकीकरण के लिए बिस्मार्क ने कितने युद्ध किए?",opts:["एक","दो","तीन","चार"],ans:2,tip:"जर्मनी के एकीकरण के लिए बिस्मार्क ने तीन युद्ध किए।"},
+  {q:"सेडोवा के युद्ध में किसकी पराजय हुई थी?",opts:["फ्रांस की","प्रशा की","ऑस्ट्रिया की","इटली की"],ans:2,tip:"सेडोवा के युद्ध में ऑस्ट्रिया की पराजय हुई थी।"},
+  {q:"सीडान का युद्ध किनके बीच हुआ था?",opts:["रूस-फ्रांस के बीच","फ्रांस-प्रशा के बीच","इटली-ऑस्ट्रिया के बीच","जर्मनी-इंग्लैंड के बीच"],ans:1,tip:"सीडान का युद्ध फ्रांस और प्रशा के बीच हुआ था।"},
+  {q:"सीडान का युद्ध किस वर्ष हुआ था?",opts:["1864","1866","1868","1870"],ans:3,tip:"सीडान का युद्ध 1870 में हुआ था।"},
+  {q:"सीडान के युद्ध में किसकी पराजय हुई थी?",opts:["प्रशा की","ऑस्ट्रिया की","फ्रांस की","इटली की"],ans:2,tip:"सीडान के युद्ध में फ्रांस की पराजय हुई थी।"},
+  {q:"सेडोवा का युद्ध किस वर्ष हुआ था?",opts:["1862","1864","1866","1868"],ans:2,tip:"सेडोवा का युद्ध 1866 में हुआ था।"},
+  {q:"इटली के एकीकरण का प्रमुख नायक कौन था?",opts:["केवल मेजिनी","केवल काबूर","केवल गैरीबाल्डी","मेजिनी, काबूर और गैरीबाल्डी — इनमें से सभी"],ans:3,tip:"मेजिनी, काबूर और गैरीबाल्डी — इनमें से सभी इटली के एकीकरण के प्रमुख नायक थे।"}
+];
+
+let cur=0,score=0,answered=false;
+let lifelines={f:true,a:true,s:true};
+let correct=0,wrong=0;
+const TOTAL=questions.length;
+
+function startGame(){
+  cur=0;score=0;answered=false;correct=0;wrong=0;
+  lifelines={f:true,a:true,s:true};
+  document.getElementById('titleScreen').classList.remove('active');
+  document.getElementById('gameScreen').classList.add('active');
+  loadQ();
+}
+
+function loadQ(){
+  answered=false;
+  const q=questions[cur];
+  document.getElementById('qBadge').textContent=`Q ${cur+1}/${TOTAL}`;
+  document.getElementById('qNum').textContent=`प्रश्न ${cur+1}`;
+  document.getElementById('qText').textContent=q.q;
+  document.getElementById('scoreDisp').textContent=score;
+  document.getElementById('progressBar').style.width=`${((cur+1)/TOTAL)*100}%`;
+
+  const grid=document.getElementById('optsGrid');grid.innerHTML='';
+  ['क','ख','ग','घ'].forEach((l,i)=>{
+    const btn=document.createElement('button');
+    btn.className='opt-btn';btn.id=`opt${i}`;
+    btn.innerHTML=`<span class="opt-letter">${l}</span><span>${q.opts[i]}</span>`;
+    btn.onclick=()=>pick(i);grid.appendChild(btn);
+  });
+  document.getElementById('feedbackBox').className='feedback-box';
+  document.getElementById('nextBtn').className='next-btn';
+  document.getElementById('ll50').disabled=!lifelines.f;
+  document.getElementById('llAud').disabled=!lifelines.a;
+  document.getElementById('llSkp').disabled=!lifelines.s;
+}
+
+function pick(chosen){
+  if(answered)return;answered=true;
+  const q=questions[cur];const c=q.ans;
+  document.querySelectorAll('.opt-btn').forEach(b=>b.disabled=true);
+  const fb=document.getElementById('feedbackBox');
+  if(chosen===c){
+    document.getElementById(`opt${chosen}`).classList.add('correct');
+    score++;correct++;
+    fb.className='feedback-box fb-right show';
+    document.getElementById('fbIcon').textContent='🎉';
+    document.getElementById('fbText').textContent='✅ सही! '+q.tip;
+  } else {
+    document.getElementById(`opt${chosen}`).classList.add('wrong');
+    document.getElementById(`opt${c}`).classList.add('correct');
+    wrong++;
+    fb.className='feedback-box fb-wrong show';
+    document.getElementById('fbIcon').textContent='❌';
+    document.getElementById('fbText').textContent='सही जवाब: ('+['क','ख','ग','घ'][c]+') '+q.opts[c]+' — '+q.tip;
+  }
+  document.getElementById('scoreDisp').textContent=score;
+  document.getElementById('nextBtn').className='next-btn show';
+}
+
+function nextQ(){cur++;if(cur>=TOTAL)showResult();else loadQ();}
+
+function use5050(){
+  if(!lifelines.f||answered)return;lifelines.f=false;
+  document.getElementById('ll50').disabled=true;
+  const q=questions[cur];
+  [0,1,2,3].filter(i=>i!==q.ans).sort(()=>Math.random()-.5).slice(0,2).forEach(i=>{
+    const b=document.getElementById(`opt${i}`);b.style.opacity='.15';b.style.pointerEvents='none';
+  });
+}
+
+function useAudience(){
+  if(!lifelines.a||answered)return;lifelines.a=false;
+  document.getElementById('llAud').disabled=true;
+  const q=questions[cur];
+  const pcts=[0,0,0,0];
+  pcts[q.ans]=Math.floor(Math.random()*20)+55;
+  let rem=100-pcts[q.ans];
+  [0,1,2,3].filter(i=>i!==q.ans).forEach((i,idx,arr)=>{
+    if(idx===arr.length-1){pcts[i]=rem;}
+    else{const p=Math.floor(Math.random()*rem*.6);pcts[i]=p;rem-=p;}
+  });
+  const colors=['#4d96ff','#ff6b9d','#ff9a3c','#c77dff'];
+  const rows=document.getElementById('pollRows');rows.innerHTML='';
+  ['क','ख','ग','घ'].forEach((l,i)=>{
+    const fill=i===q.ans?'#6bcb77':colors[i];
+    rows.innerHTML+=`<div class="poll-row"><div class="poll-lbl">${l}</div><div class="poll-track"><div class="poll-fill" style="width:0%;background:${fill}" data-p="${pcts[i]}">${q.opts[i].substring(0,10)}…</div></div><div class="poll-pct">${pcts[i]}%</div></div>`;
+  });
+  document.getElementById('pollOverlay').classList.add('show');
+  setTimeout(()=>{document.querySelectorAll('.poll-fill').forEach(f=>{f.style.width=f.dataset.p+'%';});},100);
+}
+
+function closePoll(){document.getElementById('pollOverlay').classList.remove('show');}
+
+function useSkip(){
+  if(!lifelines.s||answered)return;lifelines.s=false;
+  document.getElementById('llSkp').disabled=true;answered=true;
+  const q=questions[cur];
+  document.querySelectorAll('.opt-btn').forEach(b=>b.disabled=true);
+  document.getElementById(`opt${q.ans}`).classList.add('reveal');
+  wrong++;
+  const fb=document.getElementById('feedbackBox');
+  fb.className='feedback-box fb-wrong show';
+  document.getElementById('fbIcon').textContent='⏭️';
+  document.getElementById('fbText').textContent='Skip! सही: ('+['क','ख','ग','घ'][q.ans]+') '+q.opts[q.ans];
+  document.getElementById('nextBtn').className='next-btn show';
+}
+
+function showResult(){
+  document.getElementById('gameScreen').classList.remove('active');
+  document.getElementById('resultScreen').classList.add('active');
+  document.getElementById('rScore').textContent=score;
+  let title,msg,confetti;
+  const pct=Math.round((score/TOTAL)*100);
+  if(pct>=90){title='🏆 इतिहास Champion!';msg='अद्भुत! 90% से ज़्यादा सही। परीक्षा में टॉप करोगे!';confetti='🏆🌟🎊🎉🏛️';}
+  else if(pct>=75){title='🥇 बहुत बढ़िया!';msg='शानदार प्रदर्शन! थोड़ी और मेहनत — Champion बन जाओगे।';confetti='🌟🎉🥇✨🏛️';}
+  else if(pct>=50){title='👍 अच्छा प्रयास!';msg='अच्छी कोशिश! जो गलत हुए उन्हें किताब में दोबारा पढ़ो।';confetti='👍✨🌟💪🎯';}
+  else{title='💪 और मेहनत करो!';msg='Chapter दोबारा पढ़ो और फिर quiz दो — ज़रूर बेहतर होगा!';confetti='💪📖🎯✨😊';}
+  document.getElementById('rTitle').textContent=title;
+  document.getElementById('rMsg').textContent=msg;
+  document.getElementById('confettiRow').textContent=confetti;
+  document.getElementById('resultCards').innerHTML=`
+    <div class="r-card" style="grid-column:span 2">
+      <div class="rname">📜 इतिहास — यूरोप का एकीकरण</div>
+      <div class="rval" style="color:#8B4513">${score} / ${TOTAL} (${pct}%)</div>
+    </div>
+    <div class="r-card"><div class="rname">✅ सही</div><div class="rval" style="color:#6bcb77">${correct}</div></div>
+    <div class="r-card"><div class="rname">❌ गलत</div><div class="rval" style="color:#ff4d4d">${wrong}</div></div>`;
+}
+
+function restartGame(){
+  document.getElementById('resultScreen').classList.remove('active');
+  document.getElementById('titleScreen').classList.add('active');
+}
+</script>
+</body>
+</html>

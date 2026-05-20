@@ -1,0 +1,905 @@
+<!DOCTYPE html>
+<html lang="hi">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Super Quiz — Class 9</title>
+<style>
+@import url('https://fonts.googleapis.com/css2?family=Fredoka+One&family=Baloo+2:wght@400;600;700;800&family=Tiro+Devanagari+Hindi&display=swap');
+
+:root {
+  --bg: #fff9f0;
+  --card: #ffffff;
+  --pink: #ff6b9d;
+  --orange: #ff9a3c;
+  --yellow: #ffd93d;
+  --green: #6bcb77;
+  --blue: #4d96ff;
+  --purple: #c77dff;
+  --red: #ff4d4d;
+  --dark: #2d2d2d;
+  --light: #f0f0f0;
+}
+
+* { margin: 0; padding: 0; box-sizing: border-box; }
+
+body {
+  background: var(--bg);
+  font-family: 'Baloo 2', sans-serif;
+  min-height: 100vh;
+  overflow-x: hidden;
+  position: relative;
+}
+
+/* Floating bubbles background */
+.bubbles {
+  position: fixed;
+  inset: 0;
+  z-index: 0;
+  pointer-events: none;
+  overflow: hidden;
+}
+.bubble {
+  position: absolute;
+  border-radius: 50%;
+  opacity: 0.12;
+  animation: floatUp linear infinite;
+}
+@keyframes floatUp {
+  from { transform: translateY(100vh) scale(0.5); opacity: 0.15; }
+  to   { transform: translateY(-120px) scale(1); opacity: 0; }
+}
+
+.container {
+  position: relative;
+  z-index: 1;
+  max-width: 820px;
+  margin: 0 auto;
+  padding: 20px;
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+}
+
+.screen { display: none; }
+.screen.active { display: flex; flex-direction: column; align-items: center; gap: 18px; }
+
+/* ── TITLE SCREEN ── */
+.mascot { font-size: 5rem; animation: wiggle 1.5s ease-in-out infinite; }
+@keyframes wiggle {
+  0%,100% { transform: rotate(-8deg); }
+  50%      { transform: rotate(8deg); }
+}
+
+.game-title {
+  font-family: 'Fredoka One', cursive;
+  font-size: 3.2rem;
+  background: linear-gradient(135deg, var(--pink), var(--orange), var(--yellow));
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+  text-align: center;
+  line-height: 1.1;
+}
+
+.game-subtitle {
+  font-family: 'Tiro Devanagari Hindi', serif;
+  font-size: 1.1rem;
+  color: #888;
+  text-align: center;
+}
+
+.subject-pills {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+  justify-content: center;
+}
+.pill {
+  padding: 8px 20px;
+  border-radius: 50px;
+  font-weight: 700;
+  font-size: 0.9rem;
+  color: white;
+  box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+  animation: popIn 0.4s ease backwards;
+}
+.pill:nth-child(1) { background: var(--blue); animation-delay: 0.1s; }
+.pill:nth-child(2) { background: var(--green); animation-delay: 0.2s; }
+.pill:nth-child(3) { background: var(--pink); animation-delay: 0.3s; }
+.pill:nth-child(4) { background: var(--orange); animation-delay: 0.4s; }
+
+@keyframes popIn {
+  from { transform: scale(0); opacity: 0; }
+  to   { transform: scale(1); opacity: 1; }
+}
+
+.info-card {
+  background: white;
+  border-radius: 20px;
+  padding: 20px 30px;
+  text-align: center;
+  font-size: 1rem;
+  color: var(--dark);
+  line-height: 1.8;
+  box-shadow: 0 8px 30px rgba(0,0,0,0.08);
+  border: 3px dashed var(--yellow);
+}
+
+.play-btn {
+  background: linear-gradient(135deg, var(--pink), var(--orange));
+  color: white;
+  border: none;
+  padding: 18px 55px;
+  font-size: 1.3rem;
+  font-weight: 800;
+  border-radius: 50px;
+  cursor: pointer;
+  font-family: 'Fredoka One', cursive;
+  letter-spacing: 1px;
+  box-shadow: 0 8px 25px rgba(255,107,157,0.4);
+  transition: all 0.2s;
+  animation: pulse 2s ease infinite;
+}
+.play-btn:hover { transform: scale(1.07) translateY(-3px); }
+@keyframes pulse {
+  0%,100% { box-shadow: 0 8px 25px rgba(255,107,157,0.4); }
+  50%      { box-shadow: 0 8px 40px rgba(255,107,157,0.7); }
+}
+
+/* ── GAME SCREEN ── */
+.top-strip {
+  width: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+}
+
+.q-badge {
+  background: var(--purple);
+  color: white;
+  font-family: 'Fredoka One', cursive;
+  font-size: 1rem;
+  padding: 8px 18px;
+  border-radius: 50px;
+  box-shadow: 0 4px 12px rgba(199,125,255,0.35);
+}
+
+.subj-chip {
+  padding: 8px 18px;
+  border-radius: 50px;
+  font-weight: 700;
+  font-size: 0.9rem;
+  color: white;
+  box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+}
+
+.score-chip {
+  background: var(--green);
+  color: white;
+  font-family: 'Fredoka One', cursive;
+  font-size: 1rem;
+  padding: 8px 18px;
+  border-radius: 50px;
+  box-shadow: 0 4px 12px rgba(107,203,119,0.35);
+}
+
+/* Progress dots */
+.progress-dots {
+  display: flex;
+  gap: 6px;
+  flex-wrap: wrap;
+  justify-content: center;
+  width: 100%;
+}
+.dot {
+  width: 22px;
+  height: 22px;
+  border-radius: 50%;
+  background: #e0e0e0;
+  transition: all 0.3s;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 0.6rem;
+  font-weight: 700;
+  color: white;
+}
+.dot.done-right { background: var(--green); }
+.dot.done-wrong { background: var(--red); }
+.dot.current { background: var(--orange); transform: scale(1.3); box-shadow: 0 0 10px rgba(255,154,60,0.5); }
+
+/* Question card */
+.q-card {
+  width: 100%;
+  background: white;
+  border-radius: 24px;
+  padding: 28px 30px;
+  text-align: center;
+  box-shadow: 0 10px 40px rgba(0,0,0,0.1);
+  border-top: 6px solid var(--yellow);
+  position: relative;
+  overflow: hidden;
+}
+.q-card::before {
+  content: '?';
+  position: absolute;
+  right: 20px;
+  top: 10px;
+  font-family: 'Fredoka One', cursive;
+  font-size: 5rem;
+  color: var(--yellow);
+  opacity: 0.15;
+  line-height: 1;
+}
+
+.q-text {
+  font-family: 'Tiro Devanagari Hindi', serif;
+  font-size: 1.35rem;
+  color: var(--dark);
+  line-height: 1.7;
+  position: relative;
+}
+
+/* Options */
+.opts-grid {
+  width: 100%;
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 12px;
+}
+
+.opt-btn {
+  background: white;
+  border: 3px solid #e8e8e8;
+  border-radius: 16px;
+  padding: 14px 16px;
+  font-size: 0.95rem;
+  font-family: 'Tiro Devanagari Hindi', serif;
+  color: var(--dark);
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  text-align: left;
+  transition: all 0.2s;
+  box-shadow: 0 4px 12px rgba(0,0,0,0.06);
+}
+.opt-btn:hover:not(:disabled) {
+  transform: translateY(-3px);
+  box-shadow: 0 8px 20px rgba(0,0,0,0.12);
+  border-color: var(--blue);
+}
+.opt-btn:disabled { cursor: default; }
+
+.opt-letter {
+  width: 34px;
+  height: 34px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-family: 'Fredoka One', cursive;
+  font-size: 1rem;
+  flex-shrink: 0;
+  color: white;
+}
+.opt-btn:nth-child(1) .opt-letter { background: var(--blue); }
+.opt-btn:nth-child(2) .opt-letter { background: var(--pink); }
+.opt-btn:nth-child(3) .opt-letter { background: var(--orange); }
+.opt-btn:nth-child(4) .opt-letter { background: var(--purple); }
+
+.opt-btn.correct {
+  background: #e8fdf0;
+  border-color: var(--green);
+  animation: correctBounce 0.5s ease;
+}
+.opt-btn.correct .opt-letter { background: var(--green) !important; }
+
+.opt-btn.wrong {
+  background: #fff0f0;
+  border-color: var(--red);
+  animation: wrongShake 0.4s ease;
+}
+.opt-btn.wrong .opt-letter { background: var(--red) !important; }
+
+.opt-btn.reveal {
+  background: #e8fdf0;
+  border-color: var(--green);
+  opacity: 0.75;
+}
+.opt-btn.reveal .opt-letter { background: var(--green) !important; }
+
+@keyframes correctBounce {
+  0%   { transform: scale(1); }
+  40%  { transform: scale(1.04); }
+  100% { transform: scale(1); }
+}
+@keyframes wrongShake {
+  0%,100% { transform: translateX(0); }
+  25%      { transform: translateX(-8px); }
+  75%      { transform: translateX(8px); }
+}
+
+/* Feedback */
+.feedback-box {
+  width: 100%;
+  border-radius: 16px;
+  padding: 14px 20px;
+  font-family: 'Tiro Devanagari Hindi', serif;
+  font-size: 0.95rem;
+  line-height: 1.6;
+  display: none;
+  animation: fadeSlide 0.35s ease;
+}
+.feedback-box.show { display: block; }
+.feedback-box.fb-right { background: #e8fdf0; border: 2px solid var(--green); color: #1a6b2a; }
+.feedback-box.fb-wrong { background: #fff0f0; border: 2px solid var(--red); color: #8b0000; }
+.feedback-box .fb-icon { font-size: 1.2rem; margin-right: 6px; }
+
+@keyframes fadeSlide {
+  from { opacity: 0; transform: translateY(8px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+
+/* Lifelines */
+.lifelines {
+  display: flex;
+  gap: 10px;
+  justify-content: center;
+  flex-wrap: wrap;
+  width: 100%;
+}
+.ll-btn {
+  background: white;
+  border: 2px solid #e0e0e0;
+  border-radius: 50px;
+  padding: 10px 22px;
+  font-family: 'Baloo 2', sans-serif;
+  font-size: 0.9rem;
+  font-weight: 700;
+  cursor: pointer;
+  color: var(--dark);
+  transition: all 0.2s;
+  box-shadow: 0 4px 10px rgba(0,0,0,0.07);
+  display: flex;
+  align-items: center;
+  gap: 7px;
+}
+.ll-btn:hover:not(:disabled) {
+  transform: translateY(-2px);
+  box-shadow: 0 6px 16px rgba(0,0,0,0.12);
+}
+.ll-btn:disabled { opacity: 0.3; cursor: not-allowed; }
+.ll-btn.ll-50  { border-color: var(--orange); color: var(--orange); }
+.ll-btn.ll-aud { border-color: var(--blue); color: var(--blue); }
+.ll-btn.ll-skp { border-color: var(--purple); color: var(--purple); }
+
+/* Next button */
+.next-btn {
+  background: linear-gradient(135deg, var(--green), #3aaf58);
+  color: white;
+  border: none;
+  padding: 14px 44px;
+  font-size: 1.1rem;
+  font-weight: 800;
+  border-radius: 50px;
+  cursor: pointer;
+  font-family: 'Fredoka One', cursive;
+  letter-spacing: 1px;
+  box-shadow: 0 6px 20px rgba(107,203,119,0.4);
+  transition: all 0.2s;
+  display: none;
+}
+.next-btn.show { display: block; animation: popIn 0.3s ease; }
+.next-btn:hover { transform: scale(1.05); }
+
+/* ── RESULT SCREEN ── */
+.result-screen { text-align: center; }
+
+.confetti-row { font-size: 2.5rem; letter-spacing: 8px; animation: spin 3s linear infinite; }
+@keyframes spin {
+  0%   { letter-spacing: 8px; }
+  50%  { letter-spacing: 14px; }
+  100% { letter-spacing: 8px; }
+}
+
+.r-title {
+  font-family: 'Fredoka One', cursive;
+  font-size: 2.8rem;
+  background: linear-gradient(135deg, var(--pink), var(--orange));
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
+
+.r-score {
+  font-family: 'Fredoka One', cursive;
+  font-size: 4rem;
+  color: var(--dark);
+}
+.r-score span { color: var(--orange); }
+
+.r-msg {
+  font-family: 'Tiro Devanagari Hindi', serif;
+  font-size: 1.1rem;
+  color: #555;
+  line-height: 1.8;
+  max-width: 420px;
+}
+
+.subj-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 12px;
+  width: 100%;
+  max-width: 440px;
+}
+.subj-card {
+  background: white;
+  border-radius: 16px;
+  padding: 16px;
+  text-align: center;
+  box-shadow: 0 6px 20px rgba(0,0,0,0.08);
+}
+.subj-card .sname { font-size: 0.85rem; color: #888; margin-bottom: 6px; }
+.subj-card .sval  { font-family: 'Fredoka One', cursive; font-size: 1.8rem; }
+
+.replay-btn {
+  background: linear-gradient(135deg, var(--blue), var(--purple));
+  color: white;
+  border: none;
+  padding: 16px 48px;
+  font-size: 1.1rem;
+  font-weight: 800;
+  border-radius: 50px;
+  cursor: pointer;
+  font-family: 'Fredoka One', cursive;
+  letter-spacing: 1px;
+  box-shadow: 0 8px 25px rgba(77,150,255,0.35);
+  transition: all 0.2s;
+}
+.replay-btn:hover { transform: scale(1.06); }
+
+/* Audience poll overlay */
+.overlay {
+  position: fixed; inset: 0;
+  background: rgba(0,0,0,0.5);
+  z-index: 100;
+  display: none;
+  align-items: center;
+  justify-content: center;
+  backdrop-filter: blur(4px);
+}
+.overlay.show { display: flex; }
+.poll-card {
+  background: white;
+  border-radius: 24px;
+  padding: 30px;
+  width: 90%;
+  max-width: 460px;
+  text-align: center;
+  animation: popIn 0.3s ease;
+  box-shadow: 0 20px 60px rgba(0,0,0,0.2);
+}
+.poll-card h3 { font-family: 'Fredoka One', cursive; font-size: 1.4rem; color: var(--blue); margin-bottom: 20px; }
+.poll-rows { display: flex; flex-direction: column; gap: 12px; margin-bottom: 20px; }
+.poll-row  { display: flex; align-items: center; gap: 10px; }
+.poll-lbl  { width: 26px; font-family: 'Fredoka One', cursive; color: var(--dark); }
+.poll-track { flex: 1; height: 30px; background: #f0f0f0; border-radius: 8px; overflow: hidden; }
+.poll-fill  { height: 100%; border-radius: 8px; display: flex; align-items: center; padding-left: 10px; font-size: 0.8rem; font-weight: 700; color: white; transition: width 1s ease; }
+.poll-pct   { width: 40px; font-weight: 700; font-size: 0.9rem; text-align: right; }
+.close-poll-btn {
+  background: #f0f0f0; border: none; border-radius: 50px;
+  padding: 10px 28px; font-family: 'Baloo 2', sans-serif;
+  font-weight: 700; cursor: pointer; color: var(--dark);
+  transition: background 0.2s;
+}
+.close-poll-btn:hover { background: #e0e0e0; }
+</style>
+</head>
+<body>
+
+<!-- Floating bubbles -->
+<div class="bubbles" id="bubblesContainer"></div>
+
+<div class="container">
+
+  <!-- TITLE -->
+  <div class="screen title-screen active" id="titleScreen">
+    <div class="mascot">🦁</div>
+    <div class="game-title">Super Quiz!<br>Class 9</div>
+    <div class="game-subtitle">12 सवाल — 4 subjects — कितने सही?</div>
+    <div class="subject-pills">
+      <span class="pill">🔬 Science</span>
+      <span class="pill">🌍 Social Science</span>
+      <span class="pill">📖 Hindi</span>
+      <span class="pill">🔢 Math</span>
+    </div>
+    <div class="info-card">
+      हर सही जवाब = ⭐ एक Star<br>
+      3 Lifelines मिलेंगी &nbsp;✂️ 👥 ⏭️<br>
+      <small style="color:#aaa">Marg Darshan Point — Class 9</small>
+    </div>
+    <button class="play-btn" onclick="startGame()">▶ खेलना शुरू करें!</button>
+  </div>
+
+  <!-- GAME -->
+  <div class="screen game-screen" id="gameScreen">
+    <div class="top-strip">
+      <div class="q-badge" id="qBadge">Q 1/12</div>
+      <div class="subj-chip" id="subjChip">🔬 Science</div>
+      <div class="score-chip">⭐ <span id="scoreDisp">0</span></div>
+    </div>
+
+    <div class="progress-dots" id="progressDots"></div>
+
+    <div class="q-card">
+      <div class="q-text" id="qText">सवाल यहाँ आएगा...</div>
+    </div>
+
+    <div class="opts-grid" id="optsGrid"></div>
+
+    <div class="feedback-box" id="feedbackBox">
+      <span class="fb-icon" id="fbIcon"></span>
+      <span id="fbText"></span>
+    </div>
+
+    <div class="lifelines">
+      <button class="ll-btn ll-50"  id="ll50"  onclick="use5050()">✂️ 50-50</button>
+      <button class="ll-btn ll-aud" id="llAud" onclick="useAudience()">👥 Audience</button>
+      <button class="ll-btn ll-skp" id="llSkp" onclick="useSkip()">⏭️ Skip</button>
+    </div>
+
+    <button class="next-btn" id="nextBtn" onclick="nextQ()">अगला सवाल →</button>
+  </div>
+
+  <!-- RESULT -->
+  <div class="screen result-screen" id="resultScreen">
+    <div class="confetti-row" id="confettiRow">🎉🌟🎊</div>
+    <div class="r-title" id="rTitle">शाबाश!</div>
+    <div class="r-score"><span id="rScore">0</span> / 12 ⭐</div>
+    <div class="r-msg" id="rMsg"></div>
+    <div class="subj-grid" id="subjGrid"></div>
+    <button class="replay-btn" onclick="restartGame()">🔄 फिर से खेलें</button>
+  </div>
+
+</div>
+
+<!-- Poll overlay -->
+<div class="overlay" id="pollOverlay">
+  <div class="poll-card">
+    <h3>👥 Audience की राय</h3>
+    <div class="poll-rows" id="pollRows"></div>
+    <button class="close-poll-btn" onclick="closePoll()">ठीक है!</button>
+  </div>
+</div>
+
+<script>
+// ── Bubbles ──
+const bColors = ['#ff6b9d','#ff9a3c','#ffd93d','#6bcb77','#4d96ff','#c77dff'];
+const bc = document.getElementById('bubblesContainer');
+for (let i = 0; i < 18; i++) {
+  const b = document.createElement('div');
+  b.className = 'bubble';
+  const size = Math.random()*80+30;
+  b.style.cssText = `
+    width:${size}px;height:${size}px;
+    left:${Math.random()*100}%;
+    bottom:-${size}px;
+    background:${bColors[Math.floor(Math.random()*bColors.length)]};
+    animation-duration:${Math.random()*12+8}s;
+    animation-delay:${Math.random()*8}s;
+  `;
+  bc.appendChild(b);
+}
+
+// ── Questions ──
+const questions = [
+  // SCIENCE x4
+  {
+    subject:"Science", icon:"🔬", color:"#4d96ff",
+    q:"हमारे दाँत किस चीज़ से बने होते हैं?",
+    opts:["हड्डी से","इनेमल (Enamel) से","प्लास्टिक जैसे पदार्थ से","कैल्शियम धातु से"],
+    ans:1,
+    tip:"✅ दाँत का बाहरी हिस्सा Enamel से बना होता है — शरीर का सबसे कठोर पदार्थ! अंदर Dentine होता है।"
+  },
+  {
+    subject:"Science", icon:"🔬", color:"#4d96ff",
+    q:"लोहे पर जंग लगना किस प्रकार का बदलाव है?",
+    opts:["भौतिक बदलाव","रासायनिक बदलाव","कोई बदलाव नहीं","यांत्रिक बदलाव"],
+    ans:1,
+    tip:"✅ जंग = Fe + O₂ + H₂O → Fe₂O₃ (नया पदार्थ बना) = Chemical Change। वापस लोहा नहीं बनता!"
+  },
+  {
+    subject:"Science", icon:"🔬", color:"#4d96ff",
+    q:"बिजली की Unit (यूनिट) क्या होती है?",
+    opts:["Watt","Ampere","Kilowatt-Hour (kWh)","Volt"],
+    ans:2,
+    tip:"✅ घर में बिजली का बिल kWh (Unit) में आता है। 1 Unit = 1000 Watt की बिजली 1 घंटे तक।"
+  },
+  {
+    subject:"Science", icon:"🔬", color:"#4d96ff",
+    q:"पृथ्वी के चारों तरफ कौन सी परत हमें UV किरणों से बचाती है?",
+    opts:["Nitrogen परत","Ozone परत","CO₂ परत","Hydrogen परत"],
+    ans:1,
+    tip:"✅ Ozone (O₃) परत = सूरज की हानिकारक UV rays को रोकती है। इसमें छेद होना बड़ी समस्या है!"
+  },
+
+  // SOCIAL SCIENCE x4
+  {
+    subject:"Social Science", icon:"🌍", color:"#6bcb77",
+    q:"'GDP' का पूरा नाम क्या है?",
+    opts:["General Development Product","Gross Domestic Product","Global Democratic Process","Government Development Plan"],
+    ans:1,
+    tip:"✅ GDP = Gross Domestic Product — देश में एक साल में बनी सभी चीज़ों और सेवाओं की कुल कीमत।"
+  },
+  {
+    subject:"Social Science", icon:"🌍", color:"#6bcb77",
+    q:"भारत में 'मौसमी बेरोज़गारी' सबसे ज़्यादा कहाँ होती है?",
+    opts:["IT sector में","खेती में","सरकारी दफ्तरों में","फैक्ट्रियों में"],
+    ans:1,
+    tip:"✅ खेती में — बुआई और कटाई के समय काम होता है, बाकी समय बेरोज़गारी। इसे Seasonal Unemployment कहते हैं।"
+  },
+  {
+    subject:"Social Science", icon:"🌍", color:"#6bcb77",
+    q:"भारत के संविधान में मौलिक अधिकार (Fundamental Rights) कितने हैं?",
+    opts:["5","6","7","8"],
+    ans:1,
+    tip:"✅ 6 मौलिक अधिकार — समता, स्वतंत्रता, शोषण के विरुद्ध, धार्मिक स्वतंत्रता, सांस्कृतिक-शैक्षिक, संवैधानिक उपचार।"
+  },
+  {
+    subject:"Social Science", icon:"🌍", color:"#6bcb77",
+    q:"'खाद्य सुरक्षा' (Food Security) का मतलब क्या है?",
+    opts:["खाने में मिलावट न हो","सभी को हर समय पर्याप्त खाना मिले","सिर्फ गरीबों को राशन मिले","खाना export करना"],
+    ans:1,
+    tip:"✅ Food Security = Availability + Access + Absorption। सही मात्रा में, सही समय पर, पोषण वाला खाना सबको मिले।"
+  },
+
+  // HINDI x2
+  {
+    subject:"Hindi", icon:"📖", color:"#ff6b9d",
+    q:"'सुंदर' शब्द का विलोम (Antonym) क्या है?",
+    opts:["सुशील","असुंदर / कुरूप","सुडौल","सुगंधित"],
+    ans:1,
+    tip:"✅ विलोम = उल्टा अर्थ। सुंदर ↔ कुरूप / असुंदर। याद रखो: 'कु' और 'अ' उपसर्ग विलोम बनाते हैं!"
+  },
+  {
+    subject:"Hindi", icon:"📖", color:"#ff6b9d",
+    q:"'राम ने सेब खाया' — इस वाक्य में कर्म (Object) कौन सा है?",
+    opts:["राम","ने","सेब","खाया"],
+    ans:2,
+    tip:"✅ कर्म = जिस पर क्रिया का असर पड़े। यहाँ 'खाने' का असर 'सेब' पर पड़ा — इसलिए सेब = कर्म।"
+  },
+
+  // MATH x2
+  {
+    subject:"Math", icon:"🔢", color:"#ff9a3c",
+    q:"√144 = ?",
+    opts:["11","12","13","14"],
+    ans:1,
+    tip:"✅ 12 × 12 = 144। Square root निकालने का trick: 144 को prime factors में तोड़ो → 2⁴ × 3² → √ = 2² × 3 = 12।"
+  },
+  {
+    subject:"Math", icon:"🔢", color:"#ff9a3c",
+    q:"एक घन (Cube) की भुजा 5 cm है। उसका आयतन क्या होगा?",
+    opts:["25 cm³","75 cm³","125 cm³","150 cm³"],
+    ans:2,
+    tip:"✅ घन का आयतन = भुजा³ = 5 × 5 × 5 = 125 cm³। पृष्ठीय क्षेत्रफल = 6 × भुजा² = 6 × 25 = 150 cm²।"
+  }
+];
+
+function shuffle(arr) {
+  const a=[...arr];
+  for(let i=a.length-1;i>0;i--){
+    const j=Math.floor(Math.random()*(i+1));
+    [a[i],a[j]]=[a[j],a[i]];
+  }
+  return a;
+}
+
+let shuffled=[], cur=0, score=0, answered=false;
+let lifelines={f:true,a:true,s:true};
+let subScores={Science:[0,0],"Social Science":[0,0],Hindi:[0,0],Math:[0,0]};
+let dotResults=[];
+
+function startGame(){
+  shuffled=shuffle(questions);
+  cur=0; score=0; answered=false;
+  lifelines={f:true,a:true,s:true};
+  subScores={Science:[0,0],"Social Science":[0,0],Hindi:[0,0],Math:[0,0]};
+  dotResults=Array(12).fill('');
+  buildDots();
+  document.getElementById('titleScreen').classList.remove('active');
+  document.getElementById('gameScreen').classList.add('active');
+  loadQ();
+}
+
+function buildDots(){
+  const wrap=document.getElementById('progressDots');
+  wrap.innerHTML='';
+  for(let i=0;i<12;i++){
+    const d=document.createElement('div');
+    d.className='dot'+(i===0?' current':'');
+    d.id=`dot${i}`;
+    d.textContent=i+1;
+    wrap.appendChild(d);
+  }
+}
+
+function updateDots(){
+  for(let i=0;i<12;i++){
+    const d=document.getElementById(`dot${i}`);
+    d.className='dot';
+    if(i<cur){
+      d.classList.add(dotResults[i]==='right'?'done-right':'done-wrong');
+    } else if(i===cur){
+      d.classList.add('current');
+    }
+  }
+}
+
+function loadQ(){
+  answered=false;
+  updateDots();
+  const q=shuffled[cur];
+  document.getElementById('qBadge').textContent=`Q ${cur+1}/12`;
+  document.getElementById('qText').textContent=q.q;
+  document.getElementById('scoreDisp').textContent=score;
+
+  const chip=document.getElementById('subjChip');
+  chip.textContent=`${q.icon} ${q.subject}`;
+  chip.style.background=q.color;
+
+  const grid=document.getElementById('optsGrid');
+  grid.innerHTML='';
+  ['A','B','C','D'].forEach((l,i)=>{
+    const btn=document.createElement('button');
+    btn.className='opt-btn';
+    btn.id=`opt${i}`;
+    btn.innerHTML=`<span class="opt-letter">${l}</span><span>${q.opts[i]}</span>`;
+    btn.onclick=()=>pick(i);
+    grid.appendChild(btn);
+  });
+
+  document.getElementById('feedbackBox').className='feedback-box';
+  document.getElementById('nextBtn').className='next-btn';
+  document.getElementById('ll50').disabled=!lifelines.f;
+  document.getElementById('llAud').disabled=!lifelines.a;
+  document.getElementById('llSkp').disabled=!lifelines.s;
+}
+
+function pick(chosen){
+  if(answered)return;
+  answered=true;
+  const q=shuffled[cur];
+  const correct=q.ans;
+  subScores[q.subject][1]++;
+  document.querySelectorAll('.opt-btn').forEach(b=>b.disabled=true);
+
+  const fb=document.getElementById('feedbackBox');
+  if(chosen===correct){
+    document.getElementById(`opt${chosen}`).classList.add('correct');
+    score++; subScores[q.subject][0]++;
+    dotResults[cur]='right';
+    fb.className='feedback-box fb-right show';
+    document.getElementById('fbIcon').textContent='🎉';
+    document.getElementById('fbText').textContent=q.tip;
+  } else {
+    document.getElementById(`opt${chosen}`).classList.add('wrong');
+    document.getElementById(`opt${correct}`).classList.add('correct');
+    dotResults[cur]='wrong';
+    fb.className='feedback-box fb-wrong show';
+    document.getElementById('fbIcon').textContent='❌';
+    document.getElementById('fbText').textContent='सही जवाब: '+q.opts[correct]+'। '+q.tip;
+  }
+  document.getElementById('scoreDisp').textContent=score;
+  document.getElementById('nextBtn').className='next-btn show';
+}
+
+function nextQ(){
+  cur++;
+  if(cur>=12){ showResult(); } else { loadQ(); }
+}
+
+function use5050(){
+  if(!lifelines.f||answered)return;
+  lifelines.f=false;
+  document.getElementById('ll50').disabled=true;
+  const q=shuffled[cur];
+  const wrongs=[0,1,2,3].filter(i=>i!==q.ans).sort(()=>Math.random()-.5).slice(0,2);
+  wrongs.forEach(i=>{
+    const b=document.getElementById(`opt${i}`);
+    b.style.opacity='0.15';
+    b.style.pointerEvents='none';
+  });
+}
+
+function useAudience(){
+  if(!lifelines.a||answered)return;
+  lifelines.a=false;
+  document.getElementById('llAud').disabled=true;
+  const q=shuffled[cur];
+  const pcts=[0,0,0,0];
+  pcts[q.ans]=Math.floor(Math.random()*20)+55;
+  let rem=100-pcts[q.ans];
+  [0,1,2,3].filter(i=>i!==q.ans).forEach((i,idx,arr)=>{
+    if(idx===arr.length-1){ pcts[i]=rem; }
+    else { const p=Math.floor(Math.random()*rem*0.6); pcts[i]=p; rem-=p; }
+  });
+
+  const colors=['#4d96ff','#ff6b9d','#ff9a3c','#c77dff'];
+  const rows=document.getElementById('pollRows');
+  rows.innerHTML='';
+  ['A','B','C','D'].forEach((l,i)=>{
+    const fill=i===q.ans?'#6bcb77':colors[i];
+    rows.innerHTML+=`<div class="poll-row">
+      <div class="poll-lbl">${l}</div>
+      <div class="poll-track"><div class="poll-fill" style="width:0%;background:${fill}" data-p="${pcts[i]}">${q.opts[i].substring(0,15)}…</div></div>
+      <div class="poll-pct">${pcts[i]}%</div>
+    </div>`;
+  });
+  document.getElementById('pollOverlay').classList.add('show');
+  setTimeout(()=>{
+    document.querySelectorAll('.poll-fill').forEach(f=>{ f.style.width=f.dataset.p+'%'; });
+  },100);
+}
+
+function closePoll(){ document.getElementById('pollOverlay').classList.remove('show'); }
+
+function useSkip(){
+  if(!lifelines.s||answered)return;
+  lifelines.s=false;
+  document.getElementById('llSkp').disabled=true;
+  answered=true;
+  const q=shuffled[cur];
+  document.querySelectorAll('.opt-btn').forEach(b=>b.disabled=true);
+  document.getElementById(`opt${q.ans}`).classList.add('reveal');
+  dotResults[cur]='wrong';
+  const fb=document.getElementById('feedbackBox');
+  fb.className='feedback-box fb-wrong show';
+  document.getElementById('fbIcon').textContent='⏭️';
+  document.getElementById('fbText').textContent='Skip! सही जवाब: '+q.opts[q.ans];
+  document.getElementById('nextBtn').className='next-btn show';
+}
+
+function showResult(){
+  document.getElementById('gameScreen').classList.remove('active');
+  document.getElementById('resultScreen').classList.add('active');
+  document.getElementById('rScore').textContent=score;
+
+  let title,msg,confetti;
+  if(score>=11){ title='🏆 Champion!'; msg='कमाल! लगभग सब सही। तुम सच में Super हो!'; confetti='🏆🌟🎊🎉🥇'; }
+  else if(score>=8){ title='🥇 शाबाश!'; msg='बहुत बढ़िया! थोड़ी और मेहनत और Champion बन जाओगे।'; confetti='🌟🎉🥇✨🎊'; }
+  else if(score>=5){ title='👍 अच्छा!'; msg='कोशिश अच्छी थी। जो गलत हुए उन्हें दोबारा पढ़ो!'; confetti='👍✨🌟💪🎯'; }
+  else { title='💪 हिम्मत रखो!'; msg='अगली बार और बेहतर करोगे। हर गलती से सीखते हैं!'; confetti='💪🌈🎯✨😊'; }
+
+  document.getElementById('rTitle').textContent=title;
+  document.getElementById('rMsg').textContent=msg;
+  document.getElementById('confettiRow').textContent=confetti;
+
+  const grid=document.getElementById('subjGrid');
+  grid.innerHTML='';
+  [
+    {n:'🔬 Science',k:'Science',c:'#4d96ff'},
+    {n:'🌍 Soc.Sci.',k:'Social Science',c:'#6bcb77'},
+    {n:'📖 Hindi',k:'Hindi',c:'#ff6b9d'},
+    {n:'🔢 Math',k:'Math',c:'#ff9a3c'}
+  ].forEach(s=>{
+    const [g,t]=subScores[s.k];
+    grid.innerHTML+=`<div class="subj-card">
+      <div class="sname">${s.n}</div>
+      <div class="sval" style="color:${s.c}">${g}/${t}</div>
+    </div>`;
+  });
+}
+
+function restartGame(){
+  document.getElementById('resultScreen').classList.remove('active');
+  document.getElementById('titleScreen').classList.add('active');
+}
+</script>
+</body>
+</html>

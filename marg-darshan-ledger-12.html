@@ -1,0 +1,2388 @@
+<!DOCTYPE html>
+<html lang="hi">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Marg Darshan Point</title>
+<meta name="application-name" content="Marg Darshan Point">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="MDP Ledger">
+<meta name="theme-color" content="#0f172a">
+<link rel="manifest" id="pwa-manifest">
+<style>
+  #install-banner{display:none;background:#1e3a5f;border-bottom:1px solid #334155;padding:10px 16px;align-items:center;gap:10px;}
+  #install-banner.show{display:flex;}
+  .install-text{flex:1;font-size:12px;color:#93c5fd;}
+  .install-text b{display:block;font-size:13px;color:#60a5fa;}
+  .btn-install{background:#2563eb;color:#fff;border:none;border-radius:8px;padding:7px 14px;font-size:13px;font-weight:700;cursor:pointer;white-space:nowrap;}
+  .btn-dismiss{background:none;border:none;color:#64748b;font-size:18px;cursor:pointer;padding:0 4px;}
+</style>
+<style>
+  *{margin:0;padding:0;box-sizing:border-box;}
+  body{font-family:'Segoe UI',sans-serif;background:#0f172a;color:#e2e8f0;min-height:100vh;}
+  input,select,button{font-family:inherit;}
+  .hidden{display:none!important;}
+
+  /* PIN Screen */
+  #pin-screen{display:flex;flex-direction:column;align-items:center;justify-content:center;min-height:100vh;padding:24px;}
+  .pin-title{font-size:22px;font-weight:700;color:#60a5fa;margin-bottom:4px;}
+  .pin-sub{font-size:12px;color:#64748b;margin-bottom:40px;}
+  .pin-label{font-size:15px;font-weight:600;color:#e2e8f0;margin-bottom:24px;}
+  .pin-dots{display:flex;gap:16px;margin-bottom:16px;}
+  .pin-dot{width:16px;height:16px;border-radius:50%;background:#334155;border:2px solid #475569;transition:all 0.15s;}
+  .pin-dot.filled{background:#60a5fa;border-color:#60a5fa;}
+  .pin-error{font-size:13px;min-height:20px;margin-bottom:12px;text-align:center;}
+  .pin-error.err{color:#f87171;}
+  .pin-error.ok{color:#4ade80;}
+  .pin-pad{display:grid;grid-template-columns:repeat(3,72px);gap:10px;margin-top:8px;}
+  .pin-key{width:72px;height:72px;border-radius:16px;background:#1e293b;color:#e2e8f0;font-size:24px;font-weight:600;border:1px solid #334155;cursor:pointer;display:flex;align-items:center;justify-content:center;transition:background 0.1s;}
+  .pin-key:active{background:#334155;}
+  .pin-key.del{background:#334155;color:#f87171;border-color:#475569;font-size:22px;}
+  .pin-key.empty{background:transparent;border:none;pointer-events:none;}
+
+  /* Main App */
+  #app-screen{display:none;}
+  .header{background:linear-gradient(135deg,#1e3a5f,#0f172a);padding:14px 16px;border-bottom:1px solid #1e293b;display:flex;justify-content:space-between;align-items:center;}
+  .header-left .title{font-size:18px;font-weight:700;color:#60a5fa;}
+  .header-left .sub{font-size:11px;color:#64748b;margin-top:2px;}
+  .btn-pin{background:none;border:1px solid #334155;border-radius:8px;color:#64748b;padding:6px 10px;font-size:13px;cursor:pointer;}
+
+  /* Summary */
+  .summary{padding:12px 16px;background:#0f172a;border-bottom:1px solid #1e293b;}
+  .summary-grid{display:grid;grid-template-columns:1fr 1fr 1fr;gap:8px;margin-bottom:0;}
+  .sum-card{background:#1e293b;border-radius:10px;padding:10px 8px;text-align:center;}
+  .sum-val{font-size:18px;font-weight:700;}
+  .sum-label{font-size:10px;color:#64748b;margin-top:2px;}
+  .purv-bar{background:#431407;border-radius:10px;padding:10px 14px;display:flex;justify-content:space-between;align-items:center;margin-top:8px;}
+
+  /* Student List */
+  #list-view{padding:16px;}
+  .list-header{display:flex;justify-content:space-between;align-items:center;margin-bottom:12px;}
+  .class-tabs{display:flex;gap:6px;margin-bottom:12px;flex-wrap:wrap;}
+  .class-tab{background:#1e293b;color:#94a3b8;border:none;border-radius:20px;padding:5px 12px;font-size:12px;cursor:pointer;}
+  .class-tab.active{background:#2563eb;color:#fff;font-weight:700;}
+  .student-card{background:#1e293b;border-radius:12px;padding:12px 14px;margin-bottom:10px;display:flex;align-items:center;gap:12px;cursor:pointer;border:1px solid #334155;}
+  .student-card.has-purv{border-color:#7c2d12;}
+  .avatar{width:40px;height:40px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:16px;font-weight:700;flex-shrink:0;}
+  .bar-bg{margin-top:5px;background:#0f172a;border-radius:4px;height:4px;overflow:hidden;}
+  .bar-fill{height:100%;transition:width 0.4s;}
+
+  /* Student Detail */
+  #detail-view{display:none;}
+  .detail-header{padding:12px 16px;display:flex;align-items:center;gap:12px;border-bottom:1px solid #1e293b;}
+  .back-btn{background:none;border:none;color:#60a5fa;font-size:20px;cursor:pointer;padding:0;}
+  .tabs{display:flex;border-bottom:1px solid #1e293b;}
+  .tab-btn{flex:1;background:none;border:none;color:#64748b;border-bottom:2px solid transparent;padding:12px 0;font-size:13px;cursor:pointer;}
+  .tab-btn.active{color:#60a5fa;border-bottom-color:#60a5fa;font-weight:700;}
+  .tab-content{padding:16px;padding-bottom:80px;}
+  .tab-pane{display:none;}
+  .tab-pane.active{display:block;}
+
+  /* Cards */
+  .card{background:#1e293b;border-radius:12px;padding:14px;margin-bottom:12px;border:1px solid #334155;}
+  .card.danger{border-color:#7c2d12;}
+  .card.success{border-color:#166534;}
+  .card-row{display:flex;justify-content:space-between;align-items:center;margin-bottom:8px;font-size:13px;}
+  .card-row:last-child{margin-bottom:0;}
+  .card-row.border-top{padding-top:8px;border-top:1px solid #334155;margin-top:0;}
+
+  /* Entry rows */
+  .entry-row{background:#0f172a;border-radius:8px;padding:10px;margin-bottom:6px;border:1px solid #1e293b;display:flex;justify-content:space-between;align-items:center;}
+  .entry-edit-form{background:#0f172a;border-radius:8px;padding:10px;margin-bottom:6px;border:1px solid #334155;}
+
+  /* Calendar */
+  .cal-grid{display:grid;grid-template-columns:repeat(7,1fr);gap:4px;text-align:center;}
+  .cal-head{font-size:9px;color:#64748b;padding:4px 0;}
+  .cal-day{aspect-ratio:1;display:flex;align-items:center;justify-content:center;border-radius:8px;cursor:pointer;font-size:12px;border:1px solid transparent;user-select:none;}
+  .cal-day.present{background:#166534;color:#4ade80;}
+  .cal-day.absent{background:#7c1d1d;color:#f87171;}
+  .cal-day.today{border-color:#60a5fa;color:#60a5fa;font-weight:700;}
+  .cal-day.empty{pointer-events:none;}
+
+  /* Marks */
+  .mark-card{background:#1e293b;border-radius:10px;padding:12px;margin-bottom:8px;border:1px solid #334155;}
+  .mark-bar-bg{margin-top:8px;background:#0f172a;border-radius:4px;height:5px;}
+  .mark-bar-fill{height:100%;border-radius:4px;}
+
+  /* Modal */
+  .modal-overlay{position:fixed;inset:0;background:rgba(0,0,0,0.7);display:flex;align-items:flex-end;justify-content:center;z-index:200;}
+  .modal-box{background:#1e293b;border-radius:16px 16px 0 0;padding:20px 20px 32px;width:100%;max-width:480px;max-height:90vh;overflow-y:auto;}
+  .modal-title{font-size:15px;font-weight:700;color:#60a5fa;margin-bottom:14px;}
+
+  /* Form elements */
+  .form-group{margin-bottom:12px;}
+  .form-label{font-size:12px;color:#94a3b8;display:block;margin-bottom:4px;}
+  .form-label.warn{color:#fb923c;}
+  .form-hint{font-size:11px;color:#64748b;margin-top:4px;}
+  .inp{width:100%;background:#0f172a;border:1px solid #334155;border-radius:7px;padding:8px 10px;color:#e2e8f0;font-size:14px;box-sizing:border-box;}
+  select.inp{background:#1e293b;}
+
+  /* Buttons */
+  .btn{width:100%;border:none;border-radius:8px;padding:10px;font-size:14px;font-weight:700;cursor:pointer;}
+  .btn-primary{background:#2563eb;color:#fff;}
+  .btn-green{background:#166534;color:#4ade80;border:1px solid #166534;}
+  .btn-blue{background:#1e40af;color:#93c5fd;}
+  .btn-gray{background:#334155;color:#94a3b8;}
+  .btn-sm{padding:6px 12px;font-size:12px;font-weight:600;border:none;border-radius:8px;cursor:pointer;}
+  .btn-icon{background:none;border:none;cursor:pointer;padding:0;font-size:13px;}
+
+  /* Misc */
+  .text-green{color:#4ade80;}
+  .text-red{color:#f87171;}
+  .text-orange{color:#fb923c;}
+  .text-muted{color:#64748b;}
+  .text-sm{font-size:11px;}
+  .fw700{font-weight:700;}
+  .empty-msg{text-align:center;color:#475569;margin-top:30px;font-size:13px;}
+  .month-sel{display:flex;gap:8px;margin-bottom:16px;}
+  .month-sel select{flex:1;}
+  .att-stats{display:flex;gap:8px;margin-bottom:12px;}
+  .att-stat{flex:1;background:#1e293b;border-radius:10px;padding:10px;text-align:center;}
+  .photo-thumb{width:80px;height:80px;object-fit:cover;border-radius:8px;border:2px solid #334155;cursor:pointer;}
+  .photo-box{display:flex;gap:8px;flex-wrap:wrap;margin-top:8px;}
+  .activity-card{background:#1e293b;border-radius:10px;padding:12px;margin-bottom:8px;border:1px solid #334155;}
+  .activity-type{display:inline-block;padding:2px 8px;border-radius:20px;font-size:11px;font-weight:700;margin-bottom:6px;}
+  .type-quiz{background:#1e3a5f;color:#60a5fa;}
+  .type-speech{background:#1a2e1a;color:#4ade80;}
+  .type-rank{background:#3b1f00;color:#fbbf24;}
+  .type-extra{background:#2d1b4e;color:#c084fc;}
+  .purv-alert{background:#431407;border-radius:10px;padding:12px 14px;margin-bottom:12px;border:1px solid #7c2d12;}
+</style>
+</head>
+<body>
+
+<!-- Install Banner -->
+<div id="install-banner">
+  <div>📱</div>
+  <div class="install-text">
+    <b>Home Screen पर Add करें</b>
+    हर बार सीधे खोलें — WhatsApp की ज़रूरत नहीं
+  </div>
+  <button class="btn-install" id="install-btn" onclick="installApp()">Add करें</button>
+  <button class="btn-dismiss" onclick="dismissInstall()">✕</button>
+</div>
+
+<!-- iOS install tip -->
+<div id="ios-banner" style="display:none;background:#1e3a5f;border-bottom:1px solid #334155;padding:10px 16px;">
+  <div style="font-size:13px;color:#60a5fa;font-weight:700;margin-bottom:4px">📱 iPhone पर Add करें</div>
+  <div style="font-size:12px;color:#93c5fd;">नीचे <b>Share</b> बटन दबाएं → <b>"Add to Home Screen"</b> चुनें → Add करें</div>
+  <button onclick="document.getElementById('ios-banner').style.display='none'" style="margin-top:6px;background:#334155;color:#94a3b8;border:none;border-radius:6px;padding:4px 10px;font-size:12px;cursor:pointer;">समझ गया ✓</button>
+</div>
+
+<!-- PIN Screen -->
+<div id="pin-screen">
+  <div class="pin-title">📚 Marg Darshan Point</div>
+  <div class="pin-sub">Madhpur, Motipur, Muzaffarpur, Bihar, Muzaffarpur</div>
+  <div class="pin-label" id="pin-label">🔐 PIN डालें</div>
+  <div class="pin-dots">
+    <div class="pin-dot" id="d0"></div>
+    <div class="pin-dot" id="d1"></div>
+    <div class="pin-dot" id="d2"></div>
+    <div class="pin-dot" id="d3"></div>
+  </div>
+  <div class="pin-error" id="pin-error"></div>
+  <div class="pin-pad">
+    <button class="pin-key" onclick="pinKey('1')">1</button>
+    <button class="pin-key" onclick="pinKey('2')">2</button>
+    <button class="pin-key" onclick="pinKey('3')">3</button>
+    <button class="pin-key" onclick="pinKey('4')">4</button>
+    <button class="pin-key" onclick="pinKey('5')">5</button>
+    <button class="pin-key" onclick="pinKey('6')">6</button>
+    <button class="pin-key" onclick="pinKey('7')">7</button>
+    <button class="pin-key" onclick="pinKey('8')">8</button>
+    <button class="pin-key" onclick="pinKey('9')">9</button>
+    <button class="pin-key empty"></button>
+    <button class="pin-key" onclick="pinKey('0')">0</button>
+    <button class="pin-key del" onclick="pinDel()">⌫</button>
+  </div>
+</div>
+
+<!-- Main App -->
+<div id="app-screen">
+  <!-- Header -->
+  <div class="header">
+    <div class="header-left">
+      <div class="title">📚 Marg Darshan Point</div>
+      <div class="sub">Madhpur, Motipur, Muzaffarpur, Bihar</div>
+    </div>
+    <button class="btn-pin" onclick="openChangePin()">🔑 PIN</button>
+  </div>
+
+  <!-- Bottom Nav -->
+  <div style="position:fixed;bottom:0;left:0;right:0;background:#1e293b;border-top:1px solid #334155;display:flex;z-index:150;max-width:480px;margin:auto;">
+    <button id="nav-students" onclick="showSection('students')" style="flex:1;background:none;border:none;padding:12px 0;color:#60a5fa;font-size:12px;font-weight:700;cursor:pointer;">👨‍🎓<br>छात्र</button>
+    <button id="nav-accounts" onclick="showSection('accounts')" style="flex:1;background:none;border:none;padding:12px 0;color:#64748b;font-size:12px;cursor:pointer;">💼<br>हिसाब</button>
+  </div>
+
+  <!-- List View -->
+  <div id="list-view">
+    <div id="summary-bar"></div>
+    <div style="padding:16px;padding-bottom:80px;">
+      <div class="list-header">
+        <span style="font-size:14px;font-weight:600;color:#94a3b8;" id="student-count">छात्र सूची</span>
+        <div style="display:flex;gap:6px;">
+          <button class="btn-sm" style="background:#7c1d1d;color:#fca5a5;border:none;border-radius:8px;padding:6px 10px;font-size:11px;font-weight:700;cursor:pointer;" onclick="openBulkReminder()">📨 Reminder</button>
+          <button class="btn-sm btn-primary" onclick="openAddStudent()">+ नया छात्र</button>
+        </div>
+      </div>
+      <div class="class-tabs" id="class-tabs"></div>
+      <div id="student-list"></div>
+    </div>
+  </div>
+
+  <!-- Detail View -->
+  <div id="detail-view">
+    <div class="detail-header">
+      <button class="back-btn" onclick="showList()">←</button>
+      <div id="det-photo-wrap" style="flex-shrink:0;cursor:pointer;" onclick="changeStudentPhoto()" title="Photo बदलें">
+        <div id="det-photo" style="width:44px;height:44px;border-radius:50%;background:#334155;display:flex;align-items:center;justify-content:center;font-size:20px;border:2px solid #475569;overflow:hidden;">
+          👤
+        </div>
+      </div>
+      <div style="flex:1;min-width:0;margin-left:10px;">
+        <div style="font-weight:700;font-size:16px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;" id="det-name"></div>
+        <div style="font-size:11px;color:#64748b;" id="det-sub"></div>
+      </div>
+      <button class="btn-sm btn-gray" style="margin-right:6px;" onclick="openEditProfile()">✏️</button>
+      <button class="btn-sm btn-green" onclick="openShare()">📤 भेजें</button>
+    </div>
+    <input type="file" id="photo-input" accept="image/*" style="display:none;" onchange="handlePhotoUpload(event)">
+    <div class="tabs" style="overflow-x:auto;display:flex;white-space:nowrap">
+      <button class="tab-btn active" onclick="switchTab('fees',this)">💰 Fees</button>
+      <button class="tab-btn" onclick="switchTab('att',this)">📅 हाज़िरी</button>
+      <button class="tab-btn" onclick="switchTab('marks',this)">📝 Marks</button>
+      <button class="tab-btn" onclick="switchTab('activities',this)">🏆 गतिविधि</button>
+    </div>
+    <div class="tab-content">
+      <div class="tab-pane active" id="tab-fees"></div>
+      <div class="tab-pane" id="tab-att"></div>
+      <div class="tab-pane" id="tab-marks"></div>
+      <div class="tab-pane" id="tab-activities"></div>
+    </div>
+  </div>
+</div>
+
+<!-- Accounts View -->
+<div id="accounts-view" style="display:none;padding-bottom:80px;">
+  <div style="background:linear-gradient(135deg,#1e3a5f,#0f172a);padding:14px 16px;border-bottom:1px solid #1e293b;">
+    <div style="font-size:16px;font-weight:700;color:#60a5fa;">💼 कोचिंग हिसाब</div>
+    <div style="font-size:11px;color:#64748b;margin-top:2px;">Expenses & Teacher Payment</div>
+  </div>
+  <div id="accounts-summary"></div>
+  <div style="display:flex;border-bottom:1px solid #1e293b;">
+    <button class="tab-btn active" id="acc-tab-exp" onclick="switchAccTab('expenses',this)" style="flex:1;background:none;border:none;padding:12px 0;font-size:13px;cursor:pointer;color:#60a5fa;border-bottom:2px solid #60a5fa;font-weight:700;">💸 खर्च</button>
+    <button class="tab-btn" id="acc-tab-pay" onclick="switchAccTab('teachers',this)" style="flex:1;background:none;border:none;padding:12px 0;font-size:13px;cursor:pointer;color:#64748b;border-bottom:2px solid transparent;">👨‍🏫 Teacher</button>
+  </div>
+  <div style="padding:16px;">
+    <div id="acc-expenses-pane"></div>
+    <div id="acc-teachers-pane" style="display:none;"></div>
+  </div>
+</div>
+
+<!-- Modals -->
+<div id="modal" class="modal-overlay hidden" onclick="closeModal(event)">
+  <div class="modal-box" id="modal-box"></div>
+</div>
+
+<script>
+// ── Data ─────────────────────────────────────────────────────────────────
+const MONTHS = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
+const MONTHS_HI = ['जनवरी','फरवरी','मार्च','अप्रैल','मई','जून','जुलाई','अगस्त','सितंबर','अक्टूबर','नवंबर','दिसंबर'];
+const CLASSES = ['Class 7','Class 8','Class 9','Class 10','Class 11','Class 12'];
+const SUBJECTS = ['Maths','Science','Hindi','Social Science','English','Sanskrit','Physics','Chemistry','Biology','Commerce'];
+const now = new Date();
+let CY = now.getFullYear(), CM = now.getMonth();
+let YEARS = [];
+for(let y=2023;y<=CY+1;y++) YEARS.push(y);
+
+function gid(id){ return generateId(); }
+function generateId(){ return Date.now().toString(36)+Math.random().toString(36).slice(2,5); }
+function save(key,val){ try{ localStorage.setItem(key,JSON.stringify(val)); }catch(e){} }
+function load(key,fb){ try{ const v=localStorage.getItem(key); return v!==null?JSON.parse(v):fb; }catch{ return fb; } }
+
+let students = load('mdp_students',[]);
+let activeClass = 'सभी';
+let currentStudent = null;
+let detailMonth = CM, detailYear = CY;
+
+// ── PIN ───────────────────────────────────────────────────────────────────
+let pinBuffer='', pinStep='enter', pinFirst='';
+
+function initPin(){
+  const saved = localStorage.getItem('mdp_pin');
+  if(!saved){ pinStep='new1'; setPinLabel('🔑 नया PIN बनाएं (4 अंक)'); }
+  else { pinStep='enter'; setPinLabel('🔐 PIN डालें'); }
+}
+
+function setPinLabel(t){ document.getElementById('pin-label').textContent=t; }
+function setPinError(msg,ok=false){
+  const el=document.getElementById('pin-error');
+  el.textContent=msg; el.className='pin-error'+(ok?' ok':msg?' err':'');
+}
+function updateDots(){
+  for(let i=0;i<4;i++) document.getElementById('d'+i).className='pin-dot'+(i<pinBuffer.length?' filled':'');
+}
+
+function pinKey(k){
+  if(pinBuffer.length>=4) return;
+  pinBuffer+=k; updateDots(); setPinError('');
+  if(pinBuffer.length===4) setTimeout(()=>submitPin(),120);
+}
+function pinDel(){ pinBuffer=pinBuffer.slice(0,-1); updateDots(); setPinError(''); }
+
+function submitPin(){
+  const saved = localStorage.getItem('mdp_pin');
+  if(pinStep==='enter'){
+    if(pinBuffer===saved){ pinBuffer=''; unlockApp(); }
+    else{ pinBuffer=''; updateDots(); setPinError('❌ गलत PIN — फिर कोशिश करें'); }
+  } else if(pinStep==='new1'){
+    pinFirst=pinBuffer; pinBuffer=''; updateDots();
+    pinStep='new2'; setPinLabel('🔑 PIN दोबारा डालें'); setPinError('PIN confirm करें ✓',true);
+  } else if(pinStep==='new2'){
+    if(pinBuffer===pinFirst){
+      localStorage.setItem('mdp_pin',pinBuffer);
+      pinBuffer=''; updateDots(); unlockApp();
+    } else {
+      pinBuffer=''; pinFirst=''; updateDots();
+      pinStep='new1'; setPinLabel('🔑 नया PIN बनाएं'); setPinError('❌ PIN मेल नहीं खाया — दोबारा बनाएं');
+    }
+  }
+}
+
+function unlockApp(){
+  document.getElementById('pin-screen').style.display='none';
+  document.getElementById('app-screen').style.display='block';
+  renderList();
+}
+
+function openChangePin(){
+  pinBuffer=''; pinFirst=''; pinStep='new1';
+  document.getElementById('app-screen').style.display='none';
+  document.getElementById('pin-screen').style.display='flex';
+  setPinLabel('🔑 नया PIN बनाएं'); setPinError(''); updateDots();
+}
+
+// ── List View ─────────────────────────────────────────────────────────────
+function renderList(){
+  renderSummary();
+  renderClassTabs();
+  renderStudents();
+  document.getElementById('student-count').textContent=`छात्र सूची (${students.length})`;
+}
+
+function renderSummary(){
+  const mk=`${CY}-${CM}`;
+  let due=0,paid=0,unpaid=0,oldTotal=0;
+  students.forEach(s=>{
+    const ex=s.payments?.[mk]||{paid:0};
+    const isFr=ex.free===true||s.sessionFree===true;
+    const effFee=isFr?0:(ex.customFee||s.sessionFee||s.monthlyFee);
+    due+=effFee;
+    const p=ex.paid||0; paid+=p;
+    if(!isFr && p<effFee) unpaid++;
+    oldTotal+=s.purvBakaya||0;
+  });
+  let html=`<div class="summary"><div class="summary-grid">
+    <div class="sum-card"><div class="sum-val text-red">₹${due-paid}</div><div class="sum-label">इस माह बकाया</div></div>
+    <div class="sum-card"><div class="sum-val text-green">₹${paid}</div><div class="sum-label">जमा</div></div>
+    <div class="sum-card"><div class="sum-val text-orange">${unpaid}</div><div class="sum-label">बाकी छात्र</div></div>
+  </div>`;
+  if(oldTotal>0) html+=`<div class="purv-bar"><span style="font-size:13px;font-weight:600;" class="text-orange">⚠️ कुल पुराना बकाया</span><span style="font-size:16px;font-weight:700;" class="text-red">₹${oldTotal}</span></div>`;
+  html+=`</div>`;
+  document.getElementById('summary-bar').innerHTML=html;
+}
+
+function renderClassTabs(){
+  // Only show classes that have students
+  const usedClasses=['सभी',...CLASSES.filter(c=>students.some(s=>s.class===c))];
+  document.getElementById('class-tabs').innerHTML=usedClasses.map(c=>{
+    const count = c==='सभी' ? students.length : students.filter(s=>s.class===c).length;
+    return `<button class="class-tab${c===activeClass?' active':''}" onclick="setClass('${c}')">${c}${c!=='सभी'?' ('+count+')':''}</button>`;
+  }).join('');
+}
+
+function setClass(c){ activeClass=c; renderClassTabs(); renderStudents(); }
+
+function renderStudents(){
+  const mk=`${CY}-${CM}`;
+  // Sort by class then by roll number
+  let list = activeClass==='सभी' ? [...students] : students.filter(s=>s.class===activeClass);
+  list.sort((a,b)=>{
+    if(a.class!==b.class) return a.class.localeCompare(b.class);
+    const ra=parseInt(a.roll)||999, rb=parseInt(b.roll)||999;
+    return ra-rb;
+  });
+  if(list.length===0){
+    document.getElementById('student-list').innerHTML=`<div class="empty-msg">कोई छात्र नहीं। "+ नया छात्र" से जोड़ें।</div>`;
+    return;
+  }
+  let html='', lastClass='';
+  list.forEach(s=>{
+    if(activeClass==='सभी' && s.class!==lastClass){
+      lastClass=s.class;
+      const classCount=students.filter(st=>st.class===s.class).length;
+      html+=`<div style="font-size:12px;font-weight:700;color:#60a5fa;margin:12px 0 6px;padding:6px 10px;background:#1e293b;border-radius:8px;border-left:3px solid #60a5fa;">📚 ${s.class} <span style="color:#64748b;font-weight:400">(${classCount} छात्र)</span></div>`;
+    }
+    const ex=s.payments?.[mk]||{paid:0};
+    const isFr=ex.free===true||s.sessionFree===true;
+    const effFee=isFr?0:(ex.customFee||s.sessionFee||s.monthlyFee);
+    const paid=ex.paid||0, due=effFee-paid;
+    const pct=isFr?100:Math.min(100,Math.round(paid/(effFee||1)*100));
+    const purv=s.purvBakaya||0;
+    const allClear=(isFr||due<=0)&&purv===0;
+    html+=`<div class="student-card${purv>0?' has-purv':''}" onclick="openDetail('${s.id}')">
+      <div class="avatar" style="background:${allClear?'#166534':'#7c1d1d'};color:${allClear?'#4ade80':'#f87171'};overflow:hidden;padding:0;">
+        ${s.photo?`<img src="${s.photo}" style="width:100%;height:100%;object-fit:cover;border-radius:50%;">`:`<span>${s.name[0].toUpperCase()}</span>`}
+      </div>
+      <div style="flex:1;min-width:0">
+        <div style="font-weight:600;font-size:14px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">${s.roll?'['+s.roll+'] ':''} ${s.name}</div>
+        <div class="text-sm text-muted">${s.class} • ${isFr?'🎁 FREE':'₹'+effFee+'/माह'}${s.village?' • '+s.village:''}</div>
+        ${purv>0?`<div class="text-sm text-orange">⚠️ पुराना: ₹${purv}</div>`:''}
+        <div class="bar-bg"><div class="bar-fill" style="width:${pct}%;background:${isFr?'#4ade80':due<=0?'#4ade80':'#f59e0b'}"></div></div>
+      </div>
+      <div style="text-align:right;flex-shrink:0">
+        <div style="font-size:13px;font-weight:700;color:${isFr?'#4ade80':due<=0?'#4ade80':'#f87171'}">${isFr?'🎁 FREE':due<=0?'✓ क्लियर':'₹'+due+' बाकी'}</div>
+        <div class="text-sm text-muted">${isFr?'माफ है':pct+'% जमा'}</div>
+      </div>
+    </div>`;
+  });
+  document.getElementById('student-list').innerHTML=html;
+}
+
+// ── Add Student ───────────────────────────────────────────────────────────
+function openAddStudent(){
+  showModal(`<div class="modal-title">नया छात्र जोड़ें</div>
+    <div style="font-size:12px;font-weight:700;color:#60a5fa;margin-bottom:8px;margin-top:4px">📋 मूल जानकारी</div>
+    <div class="form-group"><label class="form-label">नाम *</label><input class="inp" id="f-name" type="text" placeholder="छात्र का नाम"></div>
+    <div style="display:flex;gap:8px">
+      <div class="form-group" style="flex:1"><label class="form-label">Roll No.</label><input class="inp" id="f-roll" type="text" placeholder="जैसे 01"></div>
+      <div class="form-group" style="flex:1"><label class="form-label">Class</label><select class="inp" id="f-class">${CLASSES.map(c=>`<option>${c}</option>`).join('')}</select></div>
+    </div>
+    <div style="font-size:12px;font-weight:700;color:#60a5fa;margin-bottom:8px;margin-top:4px">👨‍👩‍👦 परिवार की जानकारी</div>
+    <div class="form-group"><label class="form-label">पिता का नाम</label><input class="inp" id="f-father" type="text" placeholder="पिता का नाम"></div>
+    <div class="form-group"><label class="form-label">माता का नाम</label><input class="inp" id="f-mother" type="text" placeholder="माता का नाम"></div>
+    <div class="form-group"><label class="form-label">ग्राम / मोहल्ला</label><input class="inp" id="f-village" type="text" placeholder="गाँव या मोहल्ले का नाम"></div>
+    <div style="font-size:12px;font-weight:700;color:#60a5fa;margin-bottom:8px;margin-top:4px">💰 फीस जानकारी</div>
+    <div class="form-group"><label class="form-label">Admission दिनांक</label>
+      <input class="inp" id="f-admdate" type="date" value="${new Date().toISOString().split('T')[0]}">
+      <div class="form-hint">बीच महीने admission हो तो pro-rata fees लगेगी</div></div>
+    <div class="form-group"><label class="form-label">फोन (WhatsApp)</label><input class="inp" id="f-phone" type="tel" placeholder="10 अंक"></div>
+    <div class="form-group"><label class="form-label">मासिक फीस (₹)</label><input class="inp" id="f-fee" type="number" value="500"></div>
+    <div class="form-group"><label class="form-label">पुराना बकाया (₹)</label><input class="inp" id="f-purv" type="number" value="0" placeholder="0">
+    <div class="form-hint">पहले से जो बाकी था — 0 मतलब कुछ नहीं</div></div>
+    <button class="btn btn-primary" onclick="addStudent()">जोड़ें ✓</button>`);
+}
+
+function addStudent(){
+  const name=document.getElementById('f-name').value.trim();
+  if(!name) return alert('नाम डालें');
+  const admDate = document.getElementById('f-admdate').value;
+  const s={
+    id:generateId(), name,
+    roll:document.getElementById('f-roll').value.trim(),
+    class:document.getElementById('f-class').value,
+    father:document.getElementById('f-father').value.trim(),
+    mother:document.getElementById('f-mother').value.trim(),
+    village:document.getElementById('f-village').value.trim(),
+    phone:document.getElementById('f-phone').value.trim(),
+    monthlyFee:Number(document.getElementById('f-fee').value)||500,
+    purvBakaya:Number(document.getElementById('f-purv').value)||0,
+    admissionDate: admDate,
+    payments:{},attendance:{},marks:[],specialClasses:[],activities:[]
+  };
+  // Auto pro-rata for admission month
+  if(admDate){
+    const d=new Date(admDate), m=d.getMonth(), y=d.getFullYear();
+    const daysInMonth=new Date(y,m+1,0).getDate();
+    const daysLeft=daysInMonth-d.getDate()+1;
+    const proRata=Math.round((s.monthlyFee/daysInMonth)*daysLeft);
+    const mk2=y+'-'+m;
+    s.payments[mk2]={paid:0,entries:[],customFee:proRata,proRata:true,
+      proRataNote:`Admission ${d.getDate()}/${m+1}/${y} — ${daysLeft}/${daysInMonth} दिन`};
+  }
+  students.push(s); save('mdp_students',students);
+  closeModal(); renderList();
+}
+
+// ── Detail View ───────────────────────────────────────────────────────────
+function openDetail(id){
+  currentStudent=students.find(s=>s.id===id);
+  detailMonth=CM; detailYear=CY;
+  document.getElementById('list-view').style.display='none';
+  document.getElementById('detail-view').style.display='block';
+  document.getElementById('det-name').textContent=(currentStudent.roll?'['+currentStudent.roll+'] ':'')+currentStudent.name;
+  document.getElementById('det-sub').textContent=`${currentStudent.class} • ₹${currentStudent.monthlyFee}/माह${currentStudent.village?' • '+currentStudent.village:''}`;
+  // reset tabs
+  document.querySelectorAll('.tab-btn').forEach((b,i)=>b.className='tab-btn'+(i===0?' active':''));
+  document.querySelectorAll('.tab-pane').forEach((p,i)=>p.className='tab-pane'+(i===0?' active':''));
+  renderStudentPhoto(); renderFees(); renderAtt(); renderMarks(); renderActivities();
+}
+
+function showList(){
+  document.getElementById('detail-view').style.display='none';
+  document.getElementById('list-view').style.display='block';
+  renderList();
+}
+
+function switchTab(name,btn){
+  document.querySelectorAll('.tab-btn').forEach(b=>b.className='tab-btn');
+  btn.className='tab-btn active';
+  document.querySelectorAll('.tab-pane').forEach(p=>p.className='tab-pane');
+  document.getElementById('tab-'+name).className='tab-pane active';
+}
+
+function updateCurrent(){
+  const idx=students.findIndex(s=>s.id===currentStudent.id);
+  if(idx>=0){ students[idx]=currentStudent; save('mdp_students',students); }
+}
+
+// ── Fees Tab ──────────────────────────────────────────────────────────────
+// ── Free / Discount / Session helpers ────────────────────────────────────
+function toggleFree(mk, makeF){
+  if(!currentStudent.payments) currentStudent.payments={};
+  if(!currentStudent.payments[mk]) currentStudent.payments[mk]={paid:0,entries:[]};
+  currentStudent.payments[mk].free = makeF;
+  if(makeF) currentStudent.payments[mk].paid=0;
+  updateCurrent(); renderFees();
+}
+
+function openFreeOptions(mk){
+  const s = currentStudent;
+  showModal(`<div class="modal-title">🎁 फीस Free करें</div>
+    <div style="background:#1e293b;border-radius:10px;padding:12px;margin-bottom:14px;">
+      <div style="font-size:12px;color:#64748b;margin-bottom:10px;">कितने समय के लिए free करना है?</div>
+      <button class="btn btn-primary" style="margin-bottom:8px;background:#166534;color:#4ade80;" onclick="setFreeScope('month','${mk}')">
+        📅 सिर्फ इस महीने के लिए
+      </button>
+      <button class="btn btn-primary" style="background:#14532d;color:#4ade80;border:1px solid #166534;" onclick="setFreeScope('session','${mk}')">
+        🎁 पूरे Session के लिए (सालभर FREE)
+      </button>
+    </div>
+    <div class="form-hint">Session = Class 7,8,9 → दिसंबर | Class 10 → 15 फरवरी</div>`);
+}
+
+function setFreeScope(scope, mk){
+  const s = currentStudent;
+  if(scope==='session'){
+    s.sessionFree = true;
+    delete s.sessionFee;
+    // Mark all session months as free
+    const months = getSessionMonths(s.class, detailYear);
+    months.forEach(({year,month})=>{
+      const mk2=`${year}-${month}`;
+      if(!s.payments) s.payments={};
+      if(!s.payments[mk2]) s.payments[mk2]={paid:0,entries:[]};
+      s.payments[mk2].free = true;
+      s.payments[mk2].paid = 0;
+    });
+    updateCurrent(); closeModal(); renderFees();
+    alert('✓ पूरे session के लिए FREE कर दिया गया!');
+  } else {
+    closeModal();
+    toggleFree(mk, true);
+  }
+}
+
+function removeSessionFree(){
+  if(!confirm('पूरे session की free status हटाएं?')) return;
+  const s = currentStudent;
+  s.sessionFree = false;
+  const months = getSessionMonths(s.class, detailYear);
+  months.forEach(({year,month})=>{
+    const mk2=`${year}-${month}`;
+    if(s.payments?.[mk2]) {
+      delete s.payments[mk2].free;
+      s.payments[mk2].paid=0;
+      s.payments[mk2].entries=[];
+    }
+  });
+  updateCurrent(); renderFees();
+}
+
+function openDiscount(mk, curFee){
+  const s = currentStudent;
+  showModal(`<div class="modal-title">💙 Discount / फीस कम करें</div>
+    <div style="background:#1e293b;border-radius:8px;padding:10px;margin-bottom:12px;">
+      <div style="font-size:12px;color:#64748b;margin-bottom:6px;">यह discount कब तक लागू होगा?</div>
+      <label style="display:flex;align-items:center;gap:8px;margin-bottom:8px;cursor:pointer;">
+        <input type="radio" name="dc-scope" value="month" checked> <span style="color:#e2e8f0;font-size:13px;">सिर्फ इस महीने</span>
+      </label>
+      <label style="display:flex;align-items:center;gap:8px;cursor:pointer;">
+        <input type="radio" name="dc-scope" value="session"> <span style="color:#e2e8f0;font-size:13px;">पूरे session भर (स्थायी)</span>
+      </label>
+    </div>
+    <div class="form-group"><label class="form-label">सामान्य फीस</label>
+      <div class="inp" style="color:#64748b;">₹${s.monthlyFee}</div></div>
+    <div class="form-group"><label class="form-label">नई फीस (₹) *</label>
+      <input class="inp" id="dc-fee" type="number" value="${s.sessionFee||curFee}" placeholder="जितनी लेनी हो"></div>
+    <div class="form-hint" style="margin-bottom:12px">स्थायी चुनने पर पूरे session में यही फीस लगेगी</div>
+    <button class="btn btn-primary" style="background:#1e40af;" onclick="saveDiscount('${mk}')">✓ Set करें</button>`);
+}
+
+function saveDiscount(mk){
+  const fee = Number(document.getElementById('dc-fee').value);
+  if(!fee) return alert('फीस डालें');
+  const scope = document.querySelector('input[name="dc-scope"]:checked').value;
+  if(scope==='session'){
+    // Permanent session fee
+    currentStudent.sessionFee = fee;
+    currentStudent.sessionFeeYear = detailYear;
+  } else {
+    // Only this month
+    if(!currentStudent.payments) currentStudent.payments={};
+    if(!currentStudent.payments[mk]) currentStudent.payments[mk]={paid:0,entries:[]};
+    currentStudent.payments[mk].customFee = fee;
+    currentStudent.payments[mk].free = false;
+  }
+  updateCurrent(); closeModal(); renderFees();
+}
+
+function resetCustomFee(mk){
+  if(currentStudent.payments?.[mk]) {
+    delete currentStudent.payments[mk].customFee;
+    delete currentStudent.payments[mk].free;
+  }
+  updateCurrent(); renderFees();
+}
+
+function toggleFreeSession(makeFree){
+  // Permanent free for whole session
+  currentStudent.sessionFree = makeFree;
+  currentStudent.sessionFreeYear = makeFree ? detailYear : null;
+  if(makeFree){
+    // Mark all session months as free
+    const months = getSessionMonths(currentStudent.class, detailYear);
+    months.forEach(({year,month})=>{
+      const mk2=`${year}-${month}`;
+      if(!currentStudent.payments) currentStudent.payments={};
+      if(!currentStudent.payments[mk2]) currentStudent.payments[mk2]={paid:0,entries:[]};
+      currentStudent.payments[mk2].free=true;
+    });
+  }
+  updateCurrent(); renderFees();
+}
+
+function openNewSession(){
+  const s = currentStudent;
+  const isC10 = s.class==='Class 10';
+  const newYear = detailYear + 1;
+  showModal(`<div class="modal-title">🔄 नया Session शुरू करें</div>
+    <div style="background:#1e293b;border-radius:10px;padding:12px;margin-bottom:14px;">
+      <div class="card-row"><span class="text-muted">छात्र</span><span class="fw700">${s.name}</span></div>
+      <div class="card-row"><span class="text-muted">वर्तमान Class</span><span class="fw700">${s.class}</span></div>
+      <div class="card-row"><span class="text-muted">नया Session</span><span class="fw700">अप्रैल ${newYear} से</span></div>
+    </div>
+    <div class="form-group"><label class="form-label">नई Class (Promote करें)</label>
+      <select class="inp" id="ns-class">${['Class 7','Class 8','Class 9','Class 10','Class 11','Class 12'].map(c=>`<option${c===s.class?' selected':''}>${c}</option>`).join('')}</select></div>
+    <div class="form-group"><label class="form-label">नई मासिक फीस (₹)</label>
+      <input class="inp" id="ns-fee" type="number" value="${s.sessionFee||s.monthlyFee}"></div>
+    <div class="form-group"><label class="form-label">फीस का प्रकार</label>
+      <select class="inp" id="ns-type">
+        <option value="normal">सामान्य फीस</option>
+        <option value="discount">Discount फीस (पूरे session)</option>
+        <option value="free">FREE (पूरे session)</option>
+      </select></div>
+    <div class="form-hint" style="margin-bottom:14px">पुराने session का data सुरक्षित रहेगा। नया session ${newYear} में शुरू होगा।</div>
+    <button class="btn btn-primary" style="background:#7c3aed;" onclick="startNewSession(${newYear})">✓ नया Session शुरू करें</button>`);
+}
+
+function startNewSession(newYear){
+  const s = currentStudent;
+  const newClass = document.getElementById('ns-class').value;
+  const newFee = Number(document.getElementById('ns-fee').value)||s.monthlyFee;
+  const feeType = document.getElementById('ns-type').value;
+
+  // Update student
+  s.class = newClass;
+  s.monthlyFee = newFee;
+  delete s.sessionFee;
+  delete s.sessionFree;
+
+  if(feeType==='discount') s.sessionFee = newFee;
+  if(feeType==='free') s.sessionFree = true;
+
+  // Pre-fill new session months
+  const newMonths = getSessionMonths(newClass, newYear);
+  newMonths.forEach(({year,month})=>{
+    const mk2=`${year}-${month}`;
+    if(!s.payments) s.payments={};
+    if(!s.payments[mk2]) s.payments[mk2]={paid:0,entries:[]};
+    if(feeType==='free') s.payments[mk2].free=true;
+    else if(feeType==='discount') s.payments[mk2].customFee=newFee;
+  });
+
+  detailYear = newYear;
+  detailMonth = 3; // April
+  updateCurrent(); closeModal();
+  document.getElementById('det-sub').textContent=`${s.class} • ₹${s.monthlyFee}/माह${s.village?' • '+s.village:''}`;
+  renderFees();
+  alert(`✓ ${s.name} का नया session ${newYear} शुरू हो गया!`);
+}
+
+function openSessionPay(){
+  const s = currentStudent;
+  const isC10 = s.class==='Class 10';
+  const sessionMonths = getSessionMonths(s.class, detailYear);
+  const endLabel = isC10 ? '15 फरवरी तक' : 'दिसंबर तक';
+
+  let totalFee=0, totalPaid=0;
+  const monthDetails = sessionMonths.map(({year,month})=>{
+    const mk2=`${year}-${month}`;
+    const ex2=s.payments?.[mk2]||{paid:0,entries:[]};
+    const isFr = ex2.free || s.sessionFree;
+    const fee2 = isFr ? 0 : (ex2.customFee || s.sessionFee || s.monthlyFee);
+    const paid2 = ex2.paid||0;
+    totalFee += fee2;
+    totalPaid += paid2;
+    return {year,month,fee:fee2,paid:paid2,free:isFr,due:Math.max(0,fee2-paid2)};
+  });
+  const remaining = Math.max(0, totalFee-totalPaid);
+
+  let rowsHtml = monthDetails.map(d=>`
+    <div style="display:flex;justify-content:space-between;padding:5px 8px;font-size:12px;border-bottom:1px solid #334155;">
+      <span style="color:#94a3b8;">${MONTHS_HI[d.month]} ${d.year}</span>
+      <span style="color:${d.free?'#4ade80':d.due===0?'#4ade80':'#f87171'};font-weight:600;">${d.free?'FREE':d.due===0?'✓ क्लियर':'₹'+d.due+' बाकी'}</span>
+    </div>`).join('');
+
+  showModal(`<div class="modal-title">📅 पूरा Session</div>
+    <div style="background:#1e293b;border-radius:10px;padding:12px;margin-bottom:12px;">
+      <div class="card-row"><span class="text-muted">Session</span><span class="fw700">अप्रैल → ${endLabel}</span></div>
+      <div class="card-row"><span class="text-muted">कुल फीस</span><span class="fw700">₹${totalFee}</span></div>
+      <div class="card-row"><span class="text-muted">जमा</span><span class="fw700 text-green">₹${totalPaid}</span></div>
+      <div class="card-row border-top"><span class="text-muted">बाकी</span><span class="fw700 text-red">₹${remaining}</span></div>
+    </div>
+    <div style="background:#0f172a;border-radius:8px;max-height:180px;overflow-y:auto;margin-bottom:12px;">${rowsHtml}</div>
+    <div class="form-group"><label class="form-label">अभी जमा करें (₹)</label>
+      <input class="inp" id="sp-amt" type="number" value="${remaining}" placeholder="राशि"></div>
+    <div class="form-group"><label class="form-label">नोट</label>
+      <input class="inp" id="sp-note" type="text" value="Session payment" placeholder="नोट"></div>
+    <button class="btn btn-primary" style="background:#166534;color:#4ade80;margin-bottom:8px;" onclick="saveSessionPay()">✓ जमा करें</button>
+    <button class="btn" style="background:#3b1f00;color:#fbbf24;border:none;" onclick="openNewSession()">🔄 नए Session में Convert करें</button>`);
+}
+
+function saveSessionPay(){
+  const totalAmt = Number(document.getElementById('sp-amt').value);
+  const note = document.getElementById('sp-note').value;
+  if(!totalAmt) return alert('राशि डालें');
+  const s = currentStudent;
+  const sessionMonths = getSessionMonths(s.class, detailYear);
+  let remaining = totalAmt;
+  sessionMonths.forEach(({year,month})=>{
+    if(remaining<=0) return;
+    const mk2=`${year}-${month}`;
+    if(!s.payments) s.payments={};
+    if(!s.payments[mk2]) s.payments[mk2]={paid:0,entries:[]};
+    const ex2=s.payments[mk2];
+    if(ex2.free||s.sessionFree) return;
+    const fee2 = ex2.customFee||s.sessionFee||s.monthlyFee;
+    const due2 = Math.max(0,fee2-(ex2.paid||0));
+    if(due2<=0) return;
+    const toPay = Math.min(due2,remaining);
+    ex2.paid=(ex2.paid||0)+toPay;
+    ex2.entries=ex2.entries||[];
+    ex2.entries.push({amt:toPay,date:new Date().toLocaleDateString('hi-IN'),note:note+` (${MONTHS_HI[month]})`});
+    remaining-=toPay;
+  });
+  updateCurrent(); closeModal(); renderFees();
+  alert(`✓ ₹${totalAmt} जमा! ${remaining>0?'₹'+remaining+' बाकी रहे।':'पूरा session क्लियर! 🎉'}`);
+}
+
+function openNewSession(){
+  const s = currentStudent;
+  const newYear = detailYear+1;
+  const isC10 = s.class==='Class 10';
+  showModal(`<div class="modal-title">🔄 नया Session शुरू करें</div>
+    <div style="background:#1e293b;border-radius:10px;padding:12px;margin-bottom:12px;font-size:13px;">
+      <div class="card-row"><span class="text-muted">छात्र</span><span class="fw700">${s.name}</span></div>
+      <div class="card-row"><span class="text-muted">नया Session</span><span class="fw700">April ${newYear} → ${isC10?'Feb 2026':'Dec '+newYear}</span></div>
+      ${s.sessionFee?`<div class="card-row"><span class="text-muted">Discount फीस</span><span class="fw700 text-blue">₹${s.sessionFee} (जारी रहेगी)</span></div>`:''}
+      ${s.sessionFree?`<div class="card-row"><span class="text-muted">Free status</span><span class="fw700 text-green">FREE (जारी रहेगी)</span></div>`:''}
+    </div>
+    <div style="font-size:12px;color:#64748b;margin-bottom:14px;">नया session शुरू करने पर पुराने session का data सुरक्षित रहेगा।</div>
+    <div class="form-group"><label class="form-label">नई class (promote करें?)</label>
+      <select class="inp" id="ns-class">${['Class 7','Class 8','Class 9','Class 10','Class 11','Class 12'].map(c=>`<option${c===s.class?' selected':''}>${c}</option>`).join('')}</select></div>
+    <div class="form-group"><label class="form-label">नई मासिक फीस (₹)</label>
+      <input class="inp" id="ns-fee" type="number" value="${s.monthlyFee}"></div>
+    <div class="form-group">
+      <label style="display:flex;align-items:center;gap:8px;cursor:pointer;">
+        <input type="checkbox" id="ns-keep-discount" ${s.sessionFee?'checked':''}> 
+        <span style="color:#e2e8f0;font-size:13px;">Discount/Free नए session में भी जारी रखें</span>
+      </label>
+    </div>
+    <button class="btn btn-primary" onclick="convertNewSession(${newYear})">✓ नया Session शुरू करें</button>`);
+}
+
+function convertNewSession(newYear){
+  const s = currentStudent;
+  const keepDiscount = document.getElementById('ns-keep-discount').checked;
+  s.class = document.getElementById('ns-class').value;
+  s.monthlyFee = Number(document.getElementById('ns-fee').value)||s.monthlyFee;
+  if(!keepDiscount){
+    delete s.sessionFee;
+    delete s.sessionFeeYear;
+    delete s.sessionFree;
+    delete s.sessionFreeYear;
+  } else {
+    if(s.sessionFeeYear) s.sessionFeeYear = newYear;
+    if(s.sessionFreeYear) s.sessionFreeYear = newYear;
+  }
+  // Reset month-level customFee/free for new session months
+  const newMonths = getSessionMonths(s.class, newYear);
+  newMonths.forEach(({year,month})=>{
+    const mk2=`${year}-${month}`;
+    if(s.payments?.[mk2]){
+      if(!keepDiscount){
+        delete s.payments[mk2].customFee;
+        delete s.payments[mk2].free;
+      }
+    }
+  });
+  detailYear = newYear;
+  updateCurrent(); closeModal();
+  document.getElementById('det-sub').textContent=`${s.class} • ₹${s.monthlyFee}/माह${s.village?' • '+s.village:''}`;
+  renderFees();
+  alert('✓ नया session शुरू हो गया! 🎉');
+}
+
+
+// ── Session months helper ────────────────────────────────────────────────
+function getSessionMonths(cls, year){
+  // Class 10: April to Feb 15 next year; others: April to December
+  const isClass10 = cls==='Class 10';
+  const months = [];
+  for(let m=3; m<=11; m++) months.push({year, month:m}); // Apr-Dec
+  if(isClass10) months.push({year:year+1, month:0}, {year:year+1, month:1}); // Jan-Feb
+  return months;
+}
+
+function renderFees(){
+  const s=currentStudent, purv=s.purvBakaya||0;
+  const mk=`${detailYear}-${detailMonth}`;
+  const ex=s.payments?.[mk]||{paid:0,entries:[]};
+  const isFree = ex.free===true || s.sessionFree===true;
+  const customFee = ex.customFee || s.sessionFee || s.monthlyFee;
+  const effectiveFee = isFree ? 0 : customFee;
+  const due = effectiveFee - ex.paid;
+
+  const monthSel=`<div class="month-sel">
+    <select class="inp" onchange="detailMonth=Number(this.value);renderFees()">
+      ${MONTHS_HI.map((m,i)=>`<option value="${i}"${i===detailMonth?' selected':''}>${m}</option>`).join('')}
+    </select>
+    <select class="inp" onchange="detailYear=Number(this.value);renderFees()">
+      ${YEARS.map(y=>`<option${y===detailYear?' selected':''}>${y}</option>`).join('')}
+    </select>
+  </div>`;
+
+  let purvHtml='';
+  if(purv>0) purvHtml=`<div class="purv-alert">
+    <div style="display:flex;justify-content:space-between;align-items:center">
+      <span style="font-size:13px;font-weight:600;" class="text-orange">⚠️ पुराना बकाया</span>
+      <span style="font-size:16px;font-weight:700;" class="text-red">₹${purv}</span>
+    </div>
+    <div class="text-sm text-muted" style="margin-top:4px">यह इस महीने की फीस से अलग है</div>
+  </div>`;
+
+  let specialBadge = '';
+  if(s.sessionFree) specialBadge = `<div style="background:#166534;border-radius:8px;padding:8px 12px;margin-bottom:10px;display:flex;justify-content:space-between;align-items:center"><span style="color:#4ade80;font-weight:700;">🎁 पूरा Session FREE है</span></div>`;
+  else if(isFree) specialBadge = `<div style="background:#166534;border-radius:8px;padding:8px 12px;margin-bottom:10px;"><span style="color:#4ade80;font-weight:700;">🎁 यह महीना FREE है</span></div>`;
+  else if(s.sessionFee) specialBadge = `<div style="background:#1e3a5f;border-radius:8px;padding:8px 12px;margin-bottom:10px;"><span style="color:#60a5fa;font-size:13px;">💙 Session Discount: ₹${s.monthlyFee} → <b>₹${s.sessionFee}</b>/माह (स्थायी)</span></div>`;
+  else if(customFee !== s.monthlyFee) specialBadge = `<div style="background:#1e3a5f;border-radius:8px;padding:8px 12px;margin-bottom:10px;display:flex;justify-content:space-between;align-items:center"><span style="color:#60a5fa;font-size:13px;">💙 Discount: ₹${s.monthlyFee} → <b>₹${customFee}</b></span><button onclick="resetCustomFee('${mk}')" style="background:#334155;color:#94a3b8;border:none;border-radius:6px;padding:4px 8px;font-size:11px;cursor:pointer;">हटाएं</button></div>`;
+
+  let feeCard=`<div class="card ${due<=0?'success':'danger'}">
+    ${specialBadge}
+    <div class="card-row"><span class="text-muted">लागू फीस</span><span class="fw700">${isFree?'<span style="color:#4ade80">FREE</span>':`₹${effectiveFee}`}</span></div>
+    <div class="card-row"><span class="text-muted">जमा हुई</span><span class="fw700 text-green">₹${ex.paid}</span></div>
+    <div class="card-row border-top"><span class="text-muted">बाकी</span><span class="fw700" style="color:${due<=0?'#4ade80':'#f87171'}">₹${Math.max(0,due)}</span></div>
+    ${purv>0?`<div class="card-row border-top"><span class="text-orange" style="font-size:12px">कुल बकाया (पुराना+यह माह)</span><span class="fw700 text-red">₹${Math.max(0,due)+purv}</span></div>`:''}
+  </div>`;
+
+  let entriesHtml='';
+  if((ex.entries||[]).length>0){
+    entriesHtml=`<div class="text-sm text-muted" style="margin-bottom:6px">भुगतान इतिहास</div>`;
+    entriesHtml+=(ex.entries||[]).map((e,i)=>`
+      <div class="entry-row" id="erow-${i}">
+        <div><span class="fw700 text-green">₹${e.amt}</span> <span class="text-sm text-muted">${e.date}${e.note?' — '+e.note:''}</span></div>
+        <div style="display:flex;gap:10px">
+          <button class="btn-icon" style="color:#60a5fa" onclick="editEntry(${i})">✏️</button>
+          <button class="btn-icon text-red" onclick="delEntry(${i})">🗑</button>
+        </div>
+      </div>
+      <div class="entry-edit-form hidden" id="eedit-${i}">
+        <div style="display:flex;gap:6px;margin-bottom:6px">
+          <input class="inp" style="flex:1" type="number" id="ea-${i}" value="${e.amt}" placeholder="राशि">
+          <input class="inp" style="flex:1" type="text" id="ed-${i}" value="${e.date}" placeholder="तारीख">
+        </div>
+        <input class="inp" style="margin-bottom:8px" type="text" id="en-${i}" value="${e.note||''}" placeholder="नोट">
+        <div style="display:flex;gap:6px">
+          <button class="btn btn-primary" style="padding:7px" onclick="saveEntry(${i})">✓ Save</button>
+          <button class="btn btn-gray" style="padding:7px" onclick="cancelEntry(${i})">Cancel</button>
+        </div>
+      </div>`).join('');
+  }
+
+  // Special actions bar
+  const isSessionFree = currentStudent.sessionFree===true;
+  const hasSessionFee = currentStudent.sessionFee && currentStudent.sessionFee !== currentStudent.monthlyFee;
+  let actionsBar = `<div style="display:flex;gap:6px;flex-wrap:wrap;margin-bottom:10px;">`;
+  if(isSessionFree){
+    actionsBar += `<button onclick="removeSessionFree()" style="background:#166534;color:#4ade80;border:1px solid #4ade80;border-radius:8px;padding:7px 12px;font-size:12px;font-weight:600;cursor:pointer;">🎁 Session FREE ✓ (हटाएं)</button>`;
+  } else {
+    actionsBar += `<button onclick="openFreeOptions('${mk}')" style="background:#166534;color:#4ade80;border:none;border-radius:8px;padding:7px 12px;font-size:12px;font-weight:600;cursor:pointer;">🎁 Free करें</button>`;
+  }
+  if(hasSessionFee){
+    actionsBar += `<button onclick="resetSessionDiscount()" style="background:#1e3a5f;color:#60a5fa;border:1px solid #60a5fa;border-radius:8px;padding:7px 12px;font-size:12px;font-weight:600;cursor:pointer;">💙 ₹${currentStudent.sessionFee}/माह ✓ (हटाएं)</button>`;
+  } else if(!isSessionFree){
+    actionsBar += `<button onclick="openDiscount('${mk}',${customFee})" style="background:#1e3a5f;color:#60a5fa;border:none;border-radius:8px;padding:7px 12px;font-size:12px;font-weight:600;cursor:pointer;">💙 Discount दें</button>`;
+  }
+  actionsBar += `<button onclick="openSessionPay()" style="background:#3b1f00;color:#fbbf24;border:none;border-radius:8px;padding:7px 12px;font-size:12px;font-weight:600;cursor:pointer;">📅 पूरा Session</button>`;
+  actionsBar += `<button onclick="openNewSession()" style="background:#2d1b4e;color:#c084fc;border:none;border-radius:8px;padding:7px 12px;font-size:12px;font-weight:600;cursor:pointer;">🔄 नया Session</button>`;
+  actionsBar += `</div>`;
+
+  let addForm = isFree ? `<div class="card" style="background:#0d1f0d;border-color:#166534;text-align:center;padding:16px;"><span style="color:#4ade80;">🎁 यह महीना Free है — कोई payment नहीं</span></div>` :
+  `<div class="card" style="margin-top:4px">
+    <div style="font-size:13px;font-weight:600;color:#60a5fa;margin-bottom:10px">भुगतान जोड़ें</div>
+    <input class="inp" style="margin-bottom:8px" type="number" id="pay-amt" placeholder="राशि (₹)">
+    <input class="inp" style="margin-bottom:10px" type="text" id="pay-note" placeholder="नोट (optional)">
+    <button class="btn btn-primary" onclick="addPayment()">✓ जमा करें</button>
+  </div>`;
+
+  // Year overview
+  let yearHtml=`<div style="margin-top:20px"><div class="text-sm text-muted" style="margin-bottom:8px">${detailYear} — पूरे साल का हाल</div><div style="display:grid;grid-template-columns:repeat(4,1fr);gap:6px">`;
+  MONTHS.forEach((m,i)=>{
+    const k=`${detailYear}-${i}`, p=s.payments?.[k]?.paid||0;
+    const pct=Math.min(100,Math.round(p/s.monthlyFee*100));
+    const sym=p>=s.monthlyFee?'✓':p>0?'~':'✗';
+    const col=p>=s.monthlyFee?'#4ade80':p>0?'#fb923c':'#f87171';
+    yearHtml+=`<div style="background:#1e293b;border-radius:8px;padding:8px 4px;text-align:center">
+      <div class="text-sm text-muted">${m}</div>
+      <div style="font-size:13px;font-weight:700;color:${col}">${sym}</div>
+      <div style="font-size:9px;color:#475569">${pct}%</div>
+    </div>`;
+  });
+  yearHtml+=`</div></div>`;
+
+  // Pro-rata notice
+  let proRataHtml='';
+  const prNote=ex.proRataNote||'';
+  if(prNote) proRataHtml=`<div style="background:#1e3a5f;border-radius:8px;padding:8px 12px;margin-bottom:10px;font-size:12px;color:#60a5fa;">ℹ️ ${prNote}</div>`;
+
+  document.getElementById('tab-fees').innerHTML=monthSel+purvHtml+proRataHtml+feeCard+entriesHtml+actionsBar+addForm+yearHtml;
+}
+
+function editEntry(i){
+  document.getElementById('erow-'+i).classList.add('hidden');
+  document.getElementById('eedit-'+i).classList.remove('hidden');
+}
+function cancelEntry(i){
+  document.getElementById('erow-'+i).classList.remove('hidden');
+  document.getElementById('eedit-'+i).classList.add('hidden');
+}
+function saveEntry(i){
+  const mk=`${detailYear}-${detailMonth}`;
+  const amt=Number(document.getElementById('ea-'+i).value);
+  if(!amt||amt<=0) return;
+  const entries=currentStudent.payments[mk].entries;
+  entries[i]={...entries[i],amt,date:document.getElementById('ed-'+i).value,note:document.getElementById('en-'+i).value};
+  currentStudent.payments[mk].paid=entries.reduce((s,e)=>s+e.amt,0);
+  updateCurrent(); renderFees();
+}
+function delEntry(i){
+  if(!confirm('यह entry हटाएं?')) return;
+  const mk=`${detailYear}-${detailMonth}`;
+  currentStudent.payments[mk].entries.splice(i,1);
+  currentStudent.payments[mk].paid=currentStudent.payments[mk].entries.reduce((s,e)=>s+e.amt,0);
+  updateCurrent(); renderFees();
+}
+function addPayment(){
+  const amt=Number(document.getElementById('pay-amt').value);
+  const note=document.getElementById('pay-note').value;
+  if(!amt||amt<=0) return;
+  const mk=`${detailYear}-${detailMonth}`;
+  if(!currentStudent.payments) currentStudent.payments={};
+  if(!currentStudent.payments[mk]) currentStudent.payments[mk]={paid:0,entries:[]};
+  const entry={amt,note,date:new Date().toLocaleDateString('hi-IN')};
+  currentStudent.payments[mk].entries.push(entry);
+  currentStudent.payments[mk].paid+=amt;
+  updateCurrent(); renderFees();
+}
+
+// ── Attendance Tab ────────────────────────────────────────────────────────
+let attMonth=CM, attYear=CY;
+function renderAtt(){
+  attMonth=detailMonth; attYear=detailYear;
+  const s=currentStudent;
+  const days=new Date(attYear,attMonth+1,0).getDate();
+  const fd=new Date(attYear,attMonth,1).getDay();
+  let present=0,absent=0;
+  for(let d=1;d<=days;d++){
+    const v=s.attendance?.[`${attYear}-${attMonth}-${d}`];
+    if(v===true) present++; else if(v===false) absent++;
+  }
+  let html=`<div class="month-sel">
+    <select class="inp" onchange="attMonth=Number(this.value);renderAtt()">
+      ${MONTHS_HI.map((m,i)=>`<option value="${i}"${i===attMonth?' selected':''}>${m}</option>`).join('')}
+    </select>
+    <select class="inp" onchange="attYear=Number(this.value);renderAtt()">
+      ${YEARS.map(y=>`<option${y===attYear?' selected':''}>${y}</option>`).join('')}
+    </select>
+  </div>
+  <div class="att-stats">
+    <div class="att-stat"><div style="font-size:22px;font-weight:700;" class="text-green">${present}</div><div class="text-sm text-muted">✓ उपस्थित</div></div>
+    <div class="att-stat"><div style="font-size:22px;font-weight:700;" class="text-red">${absent}</div><div class="text-sm text-muted">✗ अनुपस्थित</div></div>
+  </div>
+  <div class="text-sm text-muted" style="text-align:center;margin-bottom:8px">टैप करें: खाली → ✓ → ✗ → खाली</div>
+  <div class="cal-grid">`;
+  ['रवि','सोम','मंगल','बुध','गुरु','शुक्र','शनि'].forEach(d=>html+=`<div class="cal-head">${d}</div>`);
+  for(let i=0;i<fd;i++) html+=`<div class="cal-day empty"></div>`;
+  const todayD=now.getDate(), todayM=now.getMonth(), todayY=now.getFullYear();
+  for(let d=1;d<=days;d++){
+    const k=`${attYear}-${attMonth}-${d}`;
+    const v=s.attendance?.[k];
+    const isToday=d===todayD&&attMonth===todayM&&attYear===todayY;
+    let cls='cal-day';
+    if(v===true) cls+=' present'; else if(v===false) cls+=' absent';
+    if(isToday) cls+=' today';
+    html+=`<div class="${cls}" onclick="toggleAtt(${d})">${d}</div>`;
+  }
+  html+=`</div>`;
+  document.getElementById('tab-att').innerHTML=html;
+}
+
+function toggleAtt(d){
+  const k=`${attYear}-${attMonth}-${d}`;
+  if(!currentStudent.attendance) currentStudent.attendance={};
+  const v=currentStudent.attendance[k];
+  if(v===true) currentStudent.attendance[k]=false;
+  else if(v===false) delete currentStudent.attendance[k];
+  else currentStudent.attendance[k]=true;
+  updateCurrent(); renderAtt();
+}
+
+// ── Marks Tab ─────────────────────────────────────────────────────────────
+function renderMarks(){
+  const marks = currentStudent.marks || [];
+  const special = currentStudent.specialClasses || [];
+
+  // ── Regular Marks ──────────────────────────────────────────
+  let html = `<div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:10px">
+    <span style="font-size:14px;font-weight:700;color:#60a5fa">📝 परीक्षा Marks</span>
+    <button class="btn-sm btn-primary" onclick="openAddMark()">+ जोड़ें</button>
+  </div>`;
+  if(marks.length===0){ html+=`<div class="empty-msg" style="margin-bottom:16px">कोई exam marks नहीं।</div>`; }
+  marks.forEach((m,i)=>{
+    if(m.absent){
+      html+=`<div class="mark-card" style="border-color:#7c1d1d;background:#1c0808;">
+        <div style="display:flex;justify-content:space-between;align-items:start">
+          <div>
+            <div style="font-weight:600;font-size:14px">${m.exam}</div>
+            <div class="text-sm text-muted">${m.subject} • ${m.date}</div>
+            ${m.absentReason?`<div class="text-sm" style="color:#fb923c;margin-top:2px;">कारण: ${m.absentReason}</div>`:''}
+          </div>
+          <div style="text-align:right">
+            <div style="font-size:16px;font-weight:700;color:#f87171;">❌ Absent</div>
+            <div class="text-sm" style="color:#f87171;">अनुपस्थित</div>
+          </div>
+        </div>
+        <div style="display:flex;gap:12px;margin-top:6px">
+          <button class="btn-icon" style="color:#60a5fa;font-size:12px" onclick="openEditMark(${i})">✏️ Edit</button>
+          <button class="btn-icon text-red" style="font-size:12px" onclick="delMark(${i})">🗑 हटाएं</button>
+        </div>
+      </div>`;
+    } else {
+      const pct=Math.round(m.marks/m.outOf*100);
+      const col=pct>=75?'#4ade80':pct>=50?'#fb923c':'#f87171';
+      html+=`<div class="mark-card">
+        <div style="display:flex;justify-content:space-between;align-items:start">
+          <div><div style="font-weight:600;font-size:14px">${m.exam}</div><div class="text-sm text-muted">${m.subject} • ${m.date}</div></div>
+          <div style="text-align:right"><div style="font-size:18px;font-weight:700;color:${col}">${m.marks}/${m.outOf}</div><div class="text-sm text-muted">${pct}%</div></div>
+        </div>
+        <div class="mark-bar-bg"><div class="mark-bar-fill" style="width:${pct}%;background:${col}"></div></div>
+        <div style="display:flex;gap:12px;margin-top:6px">
+          <button class="btn-icon" style="color:#60a5fa;font-size:12px" onclick="openEditMark(${i})">✏️ Edit</button>
+          <button class="btn-icon text-red" style="font-size:12px" onclick="delMark(${i})">🗑 हटाएं</button>
+        </div>
+      </div>`;
+    }
+  });
+
+  // ── Special Classes ────────────────────────────────────────
+  html += `<div style="display:flex;justify-content:space-between;align-items:center;margin:20px 0 10px">
+    <span style="font-size:14px;font-weight:700;color:#f59e0b">⭐ Special Class</span>
+    <button class="btn-sm" style="background:#78350f;color:#fbbf24;border:none;border-radius:8px;padding:6px 12px;font-size:12px;font-weight:600;cursor:pointer" onclick="openAddSpecial()">+ जोड़ें</button>
+  </div>`;
+
+  if(special.length===0){ html+=`<div class="empty-msg">कोई special class नहीं।</div>`; }
+
+  // Group by month
+  const grouped={};
+  special.forEach((sc,i)=>{
+    const key=sc.month||'अन्य';
+    if(!grouped[key]) grouped[key]=[];
+    grouped[key].push({...sc,_i:i});
+  });
+
+  Object.keys(grouped).forEach(month=>{
+    html+=`<div style="font-size:12px;font-weight:700;color:#94a3b8;margin:10px 0 6px;text-transform:uppercase;letter-spacing:1px">${month}</div>`;
+    grouped[month].forEach(sc=>{
+      const pct=sc.marks&&sc.outOf?Math.round(sc.marks/sc.outOf*100):null;
+      const col=pct!==null?(pct>=75?'#4ade80':pct>=50?'#fb923c':'#f87171'):'#60a5fa';
+      html+=`<div class="mark-card" style="border-color:#78350f;background:#1c1208">
+        <div style="display:flex;justify-content:space-between;align-items:start">
+          <div>
+            <div style="font-weight:600;font-size:14px;color:#fbbf24">⭐ ${sc.subject}</div>
+            <div class="text-sm text-muted">${sc.date||''}${sc.note?' • '+sc.note:''}</div>
+          </div>
+          <div style="text-align:right">
+            ${pct!==null?`<div style="font-size:16px;font-weight:700;color:${col}">${sc.marks}/${sc.outOf}</div><div class="text-sm text-muted">${pct}%</div>`:'<div class="text-sm text-muted">marks नहीं</div>'}
+          </div>
+        </div>
+        ${pct!==null?`<div class="mark-bar-bg"><div class="mark-bar-fill" style="width:${pct}%;background:${col}"></div></div>`:''}
+        <div style="display:flex;gap:12px;margin-top:6px">
+          <button class="btn-icon" style="color:#60a5fa;font-size:12px" onclick="openEditSpecial(${sc._i})">✏️ Edit</button>
+          <button class="btn-icon text-red" style="font-size:12px" onclick="delSpecial(${sc._i})">🗑 हटाएं</button>
+        </div>
+      </div>`;
+    });
+  });
+
+  document.getElementById('tab-marks').innerHTML=html;
+}
+
+// ── Regular Marks CRUD ─────────────────────────────────────────────────────
+function openAddMark(idx=-1){
+  const m=idx>=0?currentStudent.marks[idx]:{subject:SUBJECTS[0],exam:'',marks:'',outOf:'100',absent:false};
+  showModal(`<div class="modal-title">${idx>=0?'✏️ Marks Edit करें':'📝 Marks जोड़ें'}</div>
+    <div class="form-group"><label class="form-label">Subject</label>
+      <select class="inp" id="mk-sub">${SUBJECTS.map(s=>`<option${s===m.subject?' selected':''}>${s}</option>`).join('')}</select></div>
+    <div class="form-group"><label class="form-label">Exam का नाम</label>
+      <input class="inp" id="mk-exam" type="text" value="${m.exam||''}" placeholder="जैसे Unit Test 1, Monthly Test"></div>
+    <div class="form-group">
+      <label class="form-label">उपस्थिति</label>
+      <div style="display:flex;gap:8px;margin-top:4px;">
+        <label style="display:flex;align-items:center;gap:6px;background:#1e293b;border-radius:8px;padding:8px 14px;cursor:pointer;flex:1;border:2px solid ${m.absent?'#334155':'#2563eb'}">
+          <input type="radio" name="mk-status" value="present" ${m.absent?'':'checked'} style="accent-color:#2563eb;">
+          <span style="color:#4ade80;font-weight:600;">✅ उपस्थित</span>
+        </label>
+        <label style="display:flex;align-items:center;gap:6px;background:#1e293b;border-radius:8px;padding:8px 14px;cursor:pointer;flex:1;border:2px solid ${m.absent?'#dc2626':'#334155'}">
+          <input type="radio" name="mk-status" value="absent" ${m.absent?'checked':''} style="accent-color:#dc2626;" onchange="toggleAbsentFields(true)">
+          <span style="color:#f87171;font-weight:600;">❌ अनुपस्थित</span>
+        </label>
+      </div>
+    </div>
+    <div id="mk-marks-fields" style="${m.absent?'display:none':''}">
+      <div class="form-group"><label class="form-label">प्राप्त अंक</label>
+        <input class="inp" id="mk-got" type="number" value="${m.marks||''}"></div>
+      <div class="form-group"><label class="form-label">कुल अंक</label>
+        <input class="inp" id="mk-of" type="number" value="${m.outOf||'100'}"></div>
+    </div>
+    <div id="mk-absent-note" style="${m.absent?'':'display:none'}">
+      <div style="background:#431407;border-radius:8px;padding:10px 12px;margin-bottom:10px;">
+        <div style="color:#f87171;font-size:13px;">❌ यह छात्र परीक्षा में अनुपस्थित था</div>
+        <div class="form-hint" style="margin-top:4px;">अनुपस्थिति का कारण (optional)</div>
+        <input class="inp" id="mk-absent-reason" type="text" value="${m.absentReason||''}" placeholder="जैसे — बीमार, घर गया" style="margin-top:6px;">
+      </div>
+    </div>
+    <button class="btn btn-primary" onclick="saveMark(${idx})">✓ ${idx>=0?'Update':'Save'} करें</button>`);
+
+  // Add radio change listeners after modal renders
+  setTimeout(()=>{
+    document.querySelectorAll('input[name="mk-status"]').forEach(r=>{
+      r.addEventListener('change',()=>{
+        const isAbsent = document.querySelector('input[name="mk-status"]:checked').value==='absent';
+        toggleAbsentFields(isAbsent);
+      });
+    });
+  },100);
+}
+
+function toggleAbsentFields(isAbsent){
+  const mf=document.getElementById('mk-marks-fields');
+  const an=document.getElementById('mk-absent-note');
+  if(mf) mf.style.display=isAbsent?'none':'block';
+  if(an) an.style.display=isAbsent?'block':'none';
+}
+function openEditMark(i){ openAddMark(i); }
+function saveMark(idx){
+  const exam=document.getElementById('mk-exam').value.trim();
+  if(!exam) return alert('Exam का नाम डालें');
+  const isAbsent = document.querySelector('input[name="mk-status"]:checked')?.value==='absent';
+  let entry;
+  if(isAbsent){
+    entry={
+      subject:document.getElementById('mk-sub').value,
+      exam, absent:true,
+      absentReason:document.getElementById('mk-absent-reason')?.value.trim()||'',
+      date:new Date().toLocaleDateString('hi-IN'),
+      id:generateId()
+    };
+  } else {
+    const marks=Number(document.getElementById('mk-got').value);
+    if(!marks && marks!==0) return alert('अंक डालें');
+    entry={
+      subject:document.getElementById('mk-sub').value,
+      exam, marks, absent:false,
+      outOf:Number(document.getElementById('mk-of').value)||100,
+      date:new Date().toLocaleDateString('hi-IN'),
+      id:generateId()
+    };
+  }
+  if(!currentStudent.marks) currentStudent.marks=[];
+  if(idx>=0) currentStudent.marks[idx]={...currentStudent.marks[idx],...entry};
+  else currentStudent.marks.push(entry);
+  updateCurrent(); closeModal(); renderMarks();
+}
+function delMark(i){
+  if(!confirm('यह entry हटाएं?')) return;
+  currentStudent.marks.splice(i,1);
+  updateCurrent(); renderMarks();
+}
+
+// ── Special Class CRUD ────────────────────────────────────────────────────
+function openAddSpecial(idx=-1){
+  const sc=idx>=0?(currentStudent.specialClasses||[])[idx]:{subject:SUBJECTS[0],month:MONTHS_HI[new Date().getMonth()],date:new Date().toLocaleDateString('hi-IN'),marks:'',outOf:'',note:''};
+  showModal(`<div class="modal-title">${idx>=0?'✏️ Special Class Edit':'⭐ Special Class जोड़ें'}</div>
+    <div class="form-group"><label class="form-label">Subject</label>
+      <select class="inp" id="sc-sub">${SUBJECTS.map(s=>`<option${s===sc.subject?' selected':''}>${s}</option>`).join('')}</select></div>
+    <div class="form-group"><label class="form-label">महीना</label>
+      <select class="inp" id="sc-month">${MONTHS_HI.map(m=>`<option${m===sc.month?' selected':''}>${m}</option>`).join('')}</select></div>
+    <div class="form-group"><label class="form-label">दिनांक</label>
+      <input class="inp" id="sc-date" type="text" value="${sc.date}" placeholder="जैसे 15/08/2025"></div>
+    <div class="form-group"><label class="form-label">प्राप्त अंक (optional)</label>
+      <input class="inp" id="sc-got" type="number" value="${sc.marks}" placeholder="अगर test हुआ हो"></div>
+    <div class="form-group"><label class="form-label">कुल अंक (optional)</label>
+      <input class="inp" id="sc-of" type="number" value="${sc.outOf}" placeholder="जैसे 50"></div>
+    <div class="form-group"><label class="form-label">नोट (optional)</label>
+      <input class="inp" id="sc-note" type="text" value="${sc.note||''}" placeholder="जैसे — Revision class, Doubt session"></div>
+    <button class="btn btn-primary" style="background:#d97706;margin-top:4px" onclick="saveSpecial(${idx})">✓ ${idx>=0?'Update':'Save'} करें</button>`);
+}
+function openEditSpecial(i){ openAddSpecial(i); }
+function saveSpecial(idx){
+  const entry={
+    subject:document.getElementById('sc-sub').value,
+    month:document.getElementById('sc-month').value,
+    date:document.getElementById('sc-date').value,
+    marks:Number(document.getElementById('sc-got').value)||null,
+    outOf:Number(document.getElementById('sc-of').value)||null,
+    note:document.getElementById('sc-note').value.trim(),
+    id:generateId()
+  };
+  if(!currentStudent.specialClasses) currentStudent.specialClasses=[];
+  if(idx>=0) currentStudent.specialClasses[idx]={...currentStudent.specialClasses[idx],...entry};
+  else currentStudent.specialClasses.push(entry);
+  updateCurrent(); closeModal(); renderMarks();
+}
+function delSpecial(i){
+  if(!confirm('यह special class हटाएं?')) return;
+  currentStudent.specialClasses.splice(i,1);
+  updateCurrent(); renderMarks();
+}
+
+// ── Student Photo ────────────────────────────────────────────────────────
+function renderStudentPhoto(){
+  const el = document.getElementById('det-photo');
+  if(!el) return;
+  if(currentStudent.photo){
+    el.innerHTML=`<img src="${currentStudent.photo}" style="width:100%;height:100%;object-fit:cover;border-radius:50%;">`;
+    el.style.border='2px solid #60a5fa';
+  } else {
+    el.innerHTML=`<span style="font-size:18px;font-weight:700;color:#94a3b8;">${currentStudent.name[0].toUpperCase()}</span>`;
+    el.style.background='#334155';
+    el.style.border='2px solid #475569';
+  }
+}
+
+function changeStudentPhoto(){
+  document.getElementById('photo-input').click();
+}
+
+function handlePhotoUpload(e){
+  const file=e.target.files[0];
+  if(!file) return;
+  // Compress image before saving
+  const reader=new FileReader();
+  reader.onload=function(ev){
+    const img=new Image();
+    img.onload=function(){
+      const canvas=document.createElement('canvas');
+      // Max 200x200 for storage efficiency
+      const maxSize=200;
+      let w=img.width, h=img.height;
+      if(w>h){ if(w>maxSize){h=Math.round(h*maxSize/w);w=maxSize;} }
+      else { if(h>maxSize){w=Math.round(w*maxSize/h);h=maxSize;} }
+      canvas.width=w; canvas.height=h;
+      const ctx=canvas.getContext('2d');
+      ctx.drawImage(img,0,0,w,h);
+      const compressed=canvas.toDataURL('image/jpeg',0.7);
+      currentStudent.photo=compressed;
+      updateCurrent();
+      renderStudentPhoto();
+      renderStudents(); // Update list card too
+    };
+    img.src=ev.target.result;
+  };
+  reader.readAsDataURL(file);
+  e.target.value=''; // Reset input
+}
+
+function removeStudentPhoto(){
+  if(!confirm('Photo हटाएं?')) return;
+  delete currentStudent.photo;
+  updateCurrent();
+  renderStudentPhoto();
+  renderStudents();
+  closeModal();
+}
+
+// ── Bulk Reminder ────────────────────────────────────────────────────────
+function openBulkReminder(){
+  const mk=`${CY}-${CM}`;
+  const dueStudents = students.filter(s=>{
+    const ex=s.payments?.[mk]||{paid:0};
+    const isFr=ex.free||s.sessionFree;
+    if(isFr) return false;
+    const fee=ex.customFee||s.sessionFee||s.monthlyFee;
+    return (fee-(ex.paid||0))>0 || (s.purvBakaya||0)>0;
+  });
+
+  if(dueStudents.length===0){
+    alert('✅ इस महीने कोई बकाया नहीं!');
+    return;
+  }
+
+  showModal(`<div class="modal-title">📨 Bulk Reminder</div>
+    <div style="background:#431407;border-radius:10px;padding:10px 14px;margin-bottom:12px;">
+      <div style="font-size:13px;color:#fb923c;font-weight:700;">${dueStudents.length} छात्रों का बकाया है</div>
+      <div style="font-size:11px;color:#64748b;margin-top:2px;">${MONTHS_HI[CM]} ${CY}</div>
+    </div>
+    <div style="max-height:200px;overflow-y:auto;margin-bottom:12px;">
+      ${dueStudents.map(s=>{
+        const ex=s.payments?.[`${CY}-${CM}`]||{paid:0};
+        const fee=ex.customFee||s.sessionFee||s.monthlyFee;
+        const due=Math.max(0,fee-(ex.paid||0))+(s.purvBakaya||0);
+        return `<div style="display:flex;justify-content:space-between;padding:8px 10px;background:#1e293b;border-radius:8px;margin-bottom:4px;">
+          <span style="font-size:13px;">${s.name}</span>
+          <span style="font-size:13px;font-weight:700;color:#f87171;">₹${due}</span>
+        </div>`;
+      }).join('')}
+    </div>
+    <button class="btn" style="background:#dc2626;color:#fff;border:none;border-radius:8px;padding:11px;width:100%;font-size:13px;font-weight:700;cursor:pointer;margin-bottom:8px" onclick="sendBulkReminder('soft')">📨 सभी को Soft Reminder भेजें</button>
+    <button class="btn" style="background:#7c1d1d;color:#fca5a5;border:1px solid #dc2626;border-radius:8px;padding:11px;width:100%;font-size:13px;font-weight:700;cursor:pointer;" onclick="sendBulkReminder('warning')">🚨 सभी को Warning भेजें</button>
+    <div class="form-hint" style="margin-top:8px;text-align:center;">हर छात्र के लिए अलग WhatsApp खुलेगा</div>`);
+}
+
+function sendBulkReminder(type){
+  const mk=`${CY}-${CM}`;
+  const dueStudents=students.filter(s=>{
+    const ex=s.payments?.[mk]||{paid:0};
+    const isFr=ex.free||s.sessionFree;
+    if(isFr) return false;
+    const fee=ex.customFee||s.sessionFee||s.monthlyFee;
+    return (fee-(ex.paid||0))>0 || (s.purvBakaya||0)>0;
+  });
+
+  let sent=0, noPhone=[];
+  dueStudents.forEach((s,i)=>{
+    if(!s.phone){ noPhone.push(s.name); return; }
+    const ex=s.payments?.[mk]||{paid:0};
+    const fee=ex.customFee||s.sessionFee||s.monthlyFee;
+    const due=Math.max(0,fee-(ex.paid||0))+(s.purvBakaya||0);
+    const phone=s.phone.replace(/\D/g,'');
+
+    let msg='';
+    if(type==='soft'){
+      msg=`🏫 *Marg Darshan Point*\n📍 Madhpur, Motipur, Muzaffarpur, Bihar\n━━━━━━━━━━━━━━━━━━━\n`;
+      msg+=`📢 *शुल्क भुगतान अनुस्मारक*\n━━━━━━━━━━━━━━━━━━━\n`;
+      msg+=`👤 *छात्र:* ${s.name}\n`;
+      if(s.father) msg+=`👨 *पिता:* ${s.father}\n`;
+      msg+=`💰 *कुल बकाया: ₹${due}*\n━━━━━━━━━━━━━━━━━━━\n`;
+      msg+=`🙏 कृपया *7 दिनों के भीतर* भुगतान करें।\n\n_Marg Darshan Point_ 🎯`;
+    } else {
+      msg=`🏫 *Marg Darshan Point*\n📍 Madhpur, Motipur, Muzaffarpur, Bihar\n━━━━━━━━━━━━━━━━━━━\n`;
+      msg+=`🚨 *अंतिम चेतावनी — फीस भुगतान*\n━━━━━━━━━━━━━━━━━━━\n`;
+      msg+=`👤 *छात्र:* ${s.name}\n`;
+      if(s.father) msg+=`👨 *पिता:* ${s.father}\n`;
+      msg+=`💰 *कुल बकाया: ₹${due}*\n━━━━━━━━━━━━━━━━━━━\n`;
+      msg+=`⚠️ *कृपया 7 दिनों के भीतर भुगतान करें।*\n\nयदि निर्धारित समय में भुगतान नहीं किया गया तो विद्यार्थी को कोचिंग से *निष्कासित* करना पड़ेगा।\n\n_Marg Darshan Point_ 🎯`;
+    }
+
+    // Open with small delay between each
+    setTimeout(()=>{
+      window.open(`https://wa.me/91${phone}?text=${encodeURIComponent(msg)}`,'_blank');
+    }, i*1500);
+    sent++;
+  });
+
+  closeModal();
+  setTimeout(()=>{
+    let alertMsg=`✅ ${sent} छात्रों को reminder भेजा जा रहा है।`;
+    if(noPhone.length>0) alertMsg+=`\n\n⚠️ इन छात्रों का नंबर नहीं है:\n${noPhone.join(', ')}`;
+    alert(alertMsg);
+  },500);
+}
+
+// ── Mid-Session Class Change ──────────────────────────────────────────────
+function openClassChange(){
+  const s = currentStudent;
+  closeModal();
+  showModal(`<div class="modal-title">📚 Mid-Session Class बदलें</div>
+    <div style="background:#1e293b;border-radius:10px;padding:12px;margin-bottom:14px;">
+      <div class="card-row"><span class="text-muted">अभी की Class</span><span class="fw700">${s.class}</span></div>
+      <div class="card-row"><span class="text-muted">Admission</span><span class="fw700">${s.admissionDate||'—'}</span></div>
+    </div>
+    <div class="form-group"><label class="form-label">नई Class *</label>
+      <select class="inp" id="cc-class">${['Class 7','Class 8','Class 9','Class 10','Class 11','Class 12'].map(c=>`<option${c===s.class?' selected':''}>${c}</option>`).join('')}</select></div>
+    <div class="form-group"><label class="form-label">बदलाव की तारीख</label>
+      <input class="inp" id="cc-date" type="date" value="${new Date().toISOString().split('T')[0]}"></div>
+    <div class="form-group"><label class="form-label">नई मासिक फीस (₹)</label>
+      <input class="inp" id="cc-fee" type="number" value="${s.monthlyFee}"></div>
+    <div class="form-hint" style="margin-bottom:12px">⚠️ पुराना data सुरक्षित रहेगा। बदलाव की तारीख से आगे नई class और fees लागू होगी।</div>
+    <button class="btn btn-primary" style="background:#1e40af;" onclick="saveClassChange()">✓ Class बदलें</button>`);
+}
+
+function saveClassChange(){
+  const s = currentStudent;
+  const newClass = document.getElementById('cc-class').value;
+  const changeDate = document.getElementById('cc-date').value;
+  const newFee = Number(document.getElementById('cc-fee').value)||s.monthlyFee;
+  if(!changeDate) return alert('तारीख डालें');
+
+  // Save class change history
+  if(!s.classHistory) s.classHistory=[];
+  s.classHistory.push({from:s.class, to:newClass, date:changeDate, oldFee:s.monthlyFee, newFee});
+
+  // Pro-rata for change month
+  const d = new Date(changeDate);
+  const m=d.getMonth(), y=d.getFullYear();
+  const daysInMonth=new Date(y,m+1,0).getDate();
+  const daysLeft=daysInMonth-d.getDate()+1;
+  const mk2=`${y}-${m}`;
+  if(!s.payments[mk2]) s.payments[mk2]={paid:0,entries:[]};
+  // Split month: old fee for days passed, new fee for remaining days
+  const oldDays=d.getDate()-1;
+  const oldAmt=Math.round((s.monthlyFee/daysInMonth)*oldDays);
+  const newAmt=Math.round((newFee/daysInMonth)*daysLeft);
+  s.payments[mk2].customFee=oldAmt+newAmt;
+  s.payments[mk2].proRataNote=`Class change ${d.getDate()}/${m+1}/${y}: ${oldDays} दिन ₹${s.monthlyFee} + ${daysLeft} दिन ₹${newFee}`;
+
+  s.class=newClass;
+  s.monthlyFee=newFee;
+  delete s.sessionFee;
+
+  updateCurrent(); closeModal();
+  document.getElementById('det-sub').textContent=`${s.class} • ₹${s.monthlyFee}/माह${s.village?' • '+s.village:''}`;
+  renderFees();
+  alert(`✓ ${s.name} की class ${newClass} हो गई!\n${changeDate} से नई fees ₹${newFee}/माह लागू।`);
+}
+
+// ── Pro-rata display in fees ──────────────────────────────────────────────
+function getProRataNote(mk){
+  return currentStudent.payments?.[mk]?.proRataNote||'';
+}
+
+// ── Activities Tab (Quiz, Speech, Rank, Extra Curricular) ─────────────────
+function renderActivities(){
+  const acts = currentStudent.activities || [];
+  const typeInfo = {
+    quiz:  {label:'🧠 Quiz',      cls:'type-quiz',  color:'#60a5fa'},
+    speech:{label:'🎤 Speech',    cls:'type-speech', color:'#4ade80'},
+    rank:  {label:'🏆 Test Rank', cls:'type-rank',   color:'#fbbf24'},
+    extra: {label:'🌟 Extra Curricular', cls:'type-extra', color:'#c084fc'}
+  };
+
+  let html = `<div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:14px">
+    <span style="font-size:14px;font-weight:700;color:#e2e8f0">🏆 गतिविधि रिकॉर्ड</span>
+    <button class="btn-sm btn-primary" onclick="openAddActivity()">+ जोड़ें</button>
+  </div>
+  <div style="display:flex;gap:6px;flex-wrap:wrap;margin-bottom:14px">
+    ${Object.entries(typeInfo).map(([k,v])=>`<span class="activity-type ${v.cls}" style="cursor:pointer" onclick="filterActivity('${k}')">${v.label}</span>`).join('')}
+    <span class="activity-type" style="background:#334155;color:#94a3b8;cursor:pointer" onclick="filterActivity('all')">सभी</span>
+  </div>`;
+
+  const filter = window._actFilter || 'all';
+  const filtered = filter==='all' ? acts : acts.filter(a=>a.type===filter);
+
+  if(filtered.length===0){
+    html += `<div class="empty-msg">कोई गतिविधि नहीं। ऊपर "+ जोड़ें" से शुरू करें।</div>`;
+  }
+
+  filtered.forEach((a,i)=>{
+    const realIdx = acts.indexOf(a);
+    const ti = typeInfo[a.type]||typeInfo.extra;
+    let detail = '';
+
+    if(a.type==='quiz'){
+      const pct = a.marks&&a.outOf ? Math.round(a.marks/a.outOf*100) : null;
+      const col = pct!==null?(pct>=75?'#4ade80':pct>=50?'#fb923c':'#f87171'):'';
+      detail = `<div style="display:flex;justify-content:space-between;margin-top:6px">
+        <span class="text-sm text-muted">Subject: ${a.subject||'—'}</span>
+        ${pct!==null?`<span style="font-weight:700;color:${col}">${a.marks}/${a.outOf} (${pct}%)</span>`:''}
+      </div>`;
+      if(pct!==null) detail+=`<div class="mark-bar-bg" style="margin-top:4px"><div class="mark-bar-fill" style="width:${pct}%;background:${col}"></div></div>`;
+    } else if(a.type==='speech'){
+      detail = `<div class="text-sm text-muted" style="margin-top:4px">Subject: ${a.subject||'—'} ${a.performance?'• Performance: '+a.performance:''}</div>`;
+    } else if(a.type==='rank'){
+      detail = `<div style="margin-top:6px;display:flex;align-items:center;gap:10px">
+        ${a.rank?`<span style="font-size:22px;font-weight:700;color:#fbbf24">🥇 Rank #${a.rank}</span>`:''}
+        ${a.totalStudents?`<span class="text-sm text-muted">/ ${a.totalStudents} छात्रों में</span>`:''}
+      </div>`;
+    } else if(a.type==='extra'){
+      detail = `<div class="text-sm text-muted" style="margin-top:4px">${a.activityName||''}</div>`;
+    }
+
+    // Photos
+    let photosHtml = '';
+    if(a.photos&&a.photos.length>0){
+      photosHtml = `<div class="photo-box">` +
+        a.photos.map((ph,pi)=>`<img src="${ph}" class="photo-thumb" onclick="viewPhoto('${realIdx}',${pi})" title="बड़ा देखें">`).join('') +
+      `</div>`;
+    }
+
+    html += `<div class="activity-card">
+      <div style="display:flex;justify-content:space-between;align-items:start">
+        <div style="flex:1">
+          <span class="activity-type ${ti.cls}">${ti.label}</span>
+          <div style="font-size:12px;color:#64748b;margin-bottom:2px">${a.date||''} ${a.month?'• '+a.month:''}</div>
+          ${detail}
+          ${a.note?`<div class="text-sm text-muted" style="margin-top:4px;font-style:italic">${a.note}</div>`:''}
+          ${photosHtml}
+        </div>
+        <div style="display:flex;gap:8px;margin-left:8px;flex-shrink:0">
+          <button class="btn-icon" style="color:#60a5fa;font-size:13px" onclick="openEditActivity(${realIdx})">✏️</button>
+          <button class="btn-icon text-red;font-size:13px" onclick="delActivity(${realIdx})">🗑</button>
+        </div>
+      </div>
+    </div>`;
+  });
+
+  document.getElementById('tab-activities').innerHTML = html;
+}
+
+function filterActivity(f){
+  window._actFilter = f;
+  renderActivities();
+}
+
+function openAddActivity(idx=-1){
+  const a = idx>=0 ? (currentStudent.activities||[])[idx] : {type:'quiz',subject:SUBJECTS[0],month:MONTHS_HI[new Date().getMonth()],date:new Date().toLocaleDateString('hi-IN'),marks:'',outOf:'',rank:'',totalStudents:'',performance:'',activityName:'',note:'',photos:[]};
+  showModal(`<div class="modal-title">${idx>=0?'✏️ Edit गतिविधि':'🏆 गतिविधि जोड़ें'}</div>
+    <div class="form-group"><label class="form-label">प्रकार चुनें</label>
+      <select class="inp" id="ac-type" onchange="toggleActivityFields()">
+        <option value="quiz"${(a.type==='quiz')?' selected':''}>🧠 Quiz</option>
+        <option value="speech"${(a.type==='speech')?' selected':''}>🎤 Speech</option>
+        <option value="rank"${(a.type==='rank')?' selected':''}>🏆 Monthly Test Rank</option>
+        <option value="extra"${(a.type==='extra')?' selected':''}>🌟 Extra Curricular</option>
+      </select></div>
+    <div class="form-group"><label class="form-label">महीना</label>
+      <select class="inp" id="ac-month">${MONTHS_HI.map(m=>`<option${m===a.month?' selected':''}>${m}</option>`).join('')}</select></div>
+    <div class="form-group"><label class="form-label">दिनांक</label>
+      <input class="inp" id="ac-date" type="text" value="${a.date||''}"></div>
+
+    <div id="ac-quiz-fields">
+      <div class="form-group"><label class="form-label">Subject</label>
+        <select class="inp" id="ac-sub">${SUBJECTS.map(s=>`<option${s===a.subject?' selected':''}>${s}</option>`).join('')}</select></div>
+      <div class="form-group"><label class="form-label">प्राप्त अंक</label><input class="inp" id="ac-got" type="number" value="${a.marks||''}"></div>
+      <div class="form-group"><label class="form-label">कुल अंक</label><input class="inp" id="ac-of" type="number" value="${a.outOf||''}"></div>
+    </div>
+
+    <div id="ac-speech-fields" style="display:none">
+      <div class="form-group"><label class="form-label">Subject</label>
+        <select class="inp" id="ac-speech-sub">${SUBJECTS.map(s=>`<option${s===a.subject?' selected':''}>${s}</option>`).join('')}</select></div>
+      <div class="form-group"><label class="form-label">Performance (optional)</label>
+        <input class="inp" id="ac-perf" type="text" value="${a.performance||''}" placeholder="जैसे — बहुत अच्छा, औसत"></div>
+    </div>
+
+    <div id="ac-rank-fields" style="display:none">
+      <div class="form-group"><label class="form-label">Rank (नंबर)</label><input class="inp" id="ac-rank" type="number" value="${a.rank||''}"></div>
+      <div class="form-group"><label class="form-label">कुल छात्र</label><input class="inp" id="ac-total" type="number" value="${a.totalStudents||''}"></div>
+    </div>
+
+    <div id="ac-extra-fields" style="display:none">
+      <div class="form-group"><label class="form-label">Activity का नाम</label>
+        <input class="inp" id="ac-actname" type="text" value="${a.activityName||''}" placeholder="जैसे — Drawing, Debate, Drama"></div>
+    </div>
+
+    <div class="form-group"><label class="form-label">नोट (optional)</label>
+      <input class="inp" id="ac-note" type="text" value="${a.note||''}" placeholder="कोई भी जानकारी"></div>
+
+    <div class="form-group">
+      <label class="form-label">📸 Photo जोड़ें (उपहार / activity की)</label>
+      <input type="file" id="ac-photo" accept="image/*" multiple style="color:#94a3b8;font-size:12px;width:100%">
+      <div class="form-hint">उपहार, certificate, या activity का photo</div>
+      <div id="ac-photo-preview" class="photo-box" style="margin-top:8px"></div>
+    </div>
+
+    <button class="btn btn-primary" onclick="saveActivity(${idx})">✓ ${idx>=0?'Update':'Save'} करें</button>`);
+
+  // Store existing photos for editing
+  window._editPhotos = (a.photos||[]).slice();
+  if(window._editPhotos.length>0){
+    document.getElementById('ac-photo-preview').innerHTML =
+      window._editPhotos.map((ph,i)=>`<img src="${ph}" class="photo-thumb"><button onclick="removeEditPhoto(${i})" style="position:relative;background:#7c1d1d;color:#f87171;border:none;border-radius:4px;font-size:10px;cursor:pointer;margin-left:-8px;margin-top:-8px;align-self:start">✕</button>`).join('');
+  }
+
+  // Photo preview on file select
+  document.getElementById('ac-photo').addEventListener('change', function(){
+    const files = Array.from(this.files);
+    files.forEach(file=>{
+      const reader = new FileReader();
+      reader.onload = e=>{
+        window._editPhotos.push(e.target.result);
+        const prev = document.getElementById('ac-photo-preview');
+        const img = document.createElement('img');
+        img.src = e.target.result; img.className='photo-thumb';
+        prev.appendChild(img);
+      };
+      reader.readAsDataURL(file);
+    });
+  });
+
+  toggleActivityFields();
+}
+
+function toggleActivityFields(){
+  const t = document.getElementById('ac-type').value;
+  document.getElementById('ac-quiz-fields').style.display = t==='quiz'?'block':'none';
+  document.getElementById('ac-speech-fields').style.display = t==='speech'?'block':'none';
+  document.getElementById('ac-rank-fields').style.display = t==='rank'?'block':'none';
+  document.getElementById('ac-extra-fields').style.display = t==='extra'?'block':'none';
+}
+
+function removeEditPhoto(i){
+  window._editPhotos.splice(i,1);
+  // Re-render preview
+  const prev = document.getElementById('ac-photo-preview');
+  if(prev) prev.innerHTML = window._editPhotos.map((ph,j)=>`<img src="${ph}" class="photo-thumb"><button onclick="removeEditPhoto(${j})" style="background:#7c1d1d;color:#f87171;border:none;border-radius:4px;font-size:10px;cursor:pointer;margin-left:-8px;margin-top:-8px">✕</button>`).join('');
+}
+
+function saveActivity(idx){
+  const type = document.getElementById('ac-type').value;
+  const entry = {
+    type, id: generateId(),
+    month: document.getElementById('ac-month').value,
+    date: document.getElementById('ac-date').value,
+    note: document.getElementById('ac-note').value.trim(),
+    photos: window._editPhotos||[],
+  };
+  if(type==='quiz'){
+    entry.subject = document.getElementById('ac-sub').value;
+    entry.marks = Number(document.getElementById('ac-got').value)||null;
+    entry.outOf = Number(document.getElementById('ac-of').value)||null;
+  } else if(type==='speech'){
+    entry.subject = document.getElementById('ac-speech-sub').value;
+    entry.performance = document.getElementById('ac-perf').value.trim();
+  } else if(type==='rank'){
+    entry.rank = Number(document.getElementById('ac-rank').value)||null;
+    entry.totalStudents = Number(document.getElementById('ac-total').value)||null;
+  } else if(type==='extra'){
+    entry.activityName = document.getElementById('ac-actname').value.trim();
+  }
+  if(!currentStudent.activities) currentStudent.activities=[];
+  if(idx>=0) currentStudent.activities[idx]={...currentStudent.activities[idx],...entry};
+  else currentStudent.activities.push(entry);
+  updateCurrent(); closeModal(); renderActivities();
+}
+
+function openEditActivity(i){ openAddActivity(i); }
+
+function delActivity(i){
+  if(!confirm('यह गतिविधि हटाएं?')) return;
+  currentStudent.activities.splice(i,1);
+  updateCurrent(); renderActivities();
+}
+
+function viewPhoto(actIdx, photoIdx){
+  const ph = (currentStudent.activities[actIdx].photos||[])[photoIdx];
+  if(!ph) return;
+  showModal(`<div style="text-align:center">
+    <img src="${ph}" style="max-width:100%;border-radius:10px;margin-bottom:12px">
+    <button class="btn btn-gray" onclick="closeModal()">बंद करें</button>
+  </div>`);
+}
+
+// ── Edit Profile ──────────────────────────────────────────────────────────
+function openEditProfile(){
+  const s=currentStudent;
+  showModal(`<div class="modal-title">✏️ जानकारी बदलें</div>
+    <div style="font-size:12px;font-weight:700;color:#60a5fa;margin-bottom:8px">📋 मूल जानकारी</div>
+    <div class="form-group"><label class="form-label">नाम *</label><input class="inp" id="ep-name" type="text" value="${s.name}"></div>
+    <div style="display:flex;gap:8px">
+      <div class="form-group" style="flex:1"><label class="form-label">Roll No.</label><input class="inp" id="ep-roll" type="text" value="${s.roll||''}"></div>
+      <div class="form-group" style="flex:1"><label class="form-label">Class</label><select class="inp" id="ep-class">${CLASSES.map(c=>`<option${c===s.class?' selected':''}>${c}</option>`).join('')}</select></div>
+    </div>
+    <div style="font-size:12px;font-weight:700;color:#60a5fa;margin-bottom:8px;margin-top:4px">👨‍👩‍👦 परिवार की जानकारी</div>
+    <div class="form-group"><label class="form-label">पिता का नाम</label><input class="inp" id="ep-father" type="text" value="${s.father||''}"></div>
+    <div class="form-group"><label class="form-label">माता का नाम</label><input class="inp" id="ep-mother" type="text" value="${s.mother||''}"></div>
+    <div class="form-group"><label class="form-label">ग्राम / मोहल्ला</label><input class="inp" id="ep-village" type="text" value="${s.village||''}"></div>
+    <div style="font-size:12px;font-weight:700;color:#60a5fa;margin-bottom:8px;margin-top:4px">💰 फीस जानकारी</div>
+    <div class="form-group"><label class="form-label">फोन (WhatsApp)</label><input class="inp" id="ep-phone" type="tel" value="${s.phone||''}"></div>
+    <div class="form-group"><label class="form-label">मासिक फीस (₹)</label><input class="inp" id="ep-fee" type="number" value="${s.monthlyFee}"></div>
+    <div class="form-group"><label class="form-label warn">⚠️ पुराना बकाया (₹)</label><input class="inp" id="ep-purv" type="number" value="${s.purvBakaya||0}">
+    <div class="form-hint">पहले से जो बाकी था — 0 मतलब क्लियर</div></div>
+    <button class="btn btn-primary" onclick="saveProfile()" style="margin-bottom:8px">✓ Save करें</button>
+    <button class="btn" style="background:#1e3a5f;color:#60a5fa;border:none;border-radius:8px;padding:10px;width:100%;font-size:14px;font-weight:700;cursor:pointer;margin-bottom:8px" onclick="openClassChange()">📚 Class बदलें (Mid-Session)</button>
+    <button class="btn" style="background:#334155;color:#c084fc;border:none;border-radius:8px;padding:10px;width:100%;font-size:14px;font-weight:700;cursor:pointer;margin-bottom:8px" onclick="closeModal();changeStudentPhoto()">📸 Photo ${currentStudent.photo?'बदलें':'लगाएं'}</button>
+    ${currentStudent.photo?`<button class="btn btn-gray" style="margin-bottom:8px;color:#f87171;background:#7c1d1d;" onclick="removeStudentPhoto()">🗑 Photo हटाएं</button>`:''}
+    <button class="btn btn-gray" style="background:#7c1d1d;color:#f87171" onclick="deleteStudent()">🗑 छात्र हटाएं</button>`);
+}
+function saveProfile(){
+  const name=document.getElementById('ep-name').value.trim();
+  if(!name) return;
+  currentStudent.name=name;
+  currentStudent.roll=document.getElementById('ep-roll').value.trim();
+  currentStudent.father=document.getElementById('ep-father').value.trim();
+  currentStudent.mother=document.getElementById('ep-mother').value.trim();
+  currentStudent.village=document.getElementById('ep-village').value.trim();
+  currentStudent.phone=document.getElementById('ep-phone').value.trim();
+  currentStudent.monthlyFee=Number(document.getElementById('ep-fee').value)||currentStudent.monthlyFee;
+  currentStudent.purvBakaya=Number(document.getElementById('ep-purv').value)||0;
+  currentStudent.class=document.getElementById('ep-class').value;
+  updateCurrent();
+  document.getElementById('det-name').textContent=(currentStudent.roll?'['+currentStudent.roll+'] ':'')+currentStudent.name;
+  document.getElementById('det-sub').textContent=`${currentStudent.class} • ₹${currentStudent.monthlyFee}/माह${currentStudent.village?' • '+currentStudent.village:''}`;
+  renderStudentPhoto();
+  closeModal(); renderFees();
+}
+function deleteStudent(){
+  if(!confirm(`"${currentStudent.name}" को हमेशा के लिए हटाएं?`)) return;
+  students=students.filter(s=>s.id!==currentStudent.id);
+  save('mdp_students',students); closeModal(); showList();
+}
+
+// ── Share / Report ────────────────────────────────────────────────────────
+function openShare(){
+  const s = currentStudent;
+  // Calculate total due
+  let totalDue = 0;
+  const sessionMonths = getSessionMonths(s.class, detailYear);
+  sessionMonths.forEach(({year,month})=>{
+    const mk2=`${year}-${month}`;
+    const ex2=s.payments?.[mk2]||{paid:0};
+    const isFr=ex2.free||s.sessionFree;
+    if(isFr) return;
+    const fee2=ex2.customFee||s.sessionFee||s.monthlyFee;
+    totalDue+=Math.max(0,fee2-(ex2.paid||0));
+  });
+  totalDue+=(s.purvBakaya||0);
+
+  showModal(`<div class="modal-title">📤 भेजें</div>
+    <div class="month-sel">
+      <select class="inp" id="sh-m">${MONTHS_HI.map((m,i)=>`<option value="${i}"${i===detailMonth?' selected':''}>${m}</option>`).join('')}</select>
+      <select class="inp" id="sh-y">${YEARS.map(y=>`<option${y===detailYear?' selected':''}>${y}</option>`).join('')}</select>
+    </div>
+    <button class="btn btn-green" style="margin-bottom:8px" onclick="sendWhatsApp()">📱 Progress Report भेजें</button>
+    <div class="text-sm text-muted" style="text-align:center;margin-bottom:10px">${s.phone?'नंबर: '+s.phone:'⚠️ फोन नंबर नहीं'}</div>
+    ${totalDue>0?`
+    <div style="background:#431407;border-radius:10px;padding:12px;margin-bottom:8px;border:1px solid #7c2d12;">
+      <div style="font-size:12px;font-weight:700;color:#fb923c;margin-bottom:8px;">⚠️ कुल बकाया: ₹${totalDue}</div>
+      <button class="btn" style="background:#dc2626;color:#fff;border:none;width:100%;border-radius:8px;padding:10px;font-size:13px;font-weight:700;cursor:pointer;margin-bottom:6px" onclick="sendReminder('soft')">📨 Soft Reminder भेजें</button>
+      <button class="btn" style="background:#7c1d1d;color:#fca5a5;border:1px solid #dc2626;width:100%;border-radius:8px;padding:10px;font-size:13px;font-weight:700;cursor:pointer;" onclick="sendReminder('warning')">⚠️ Warning Notice भेजें</button>
+    </div>`:''}
+    <button class="btn btn-blue" onclick="printReport()">📄 PDF / Print</button>
+    <div class="text-sm text-muted" style="text-align:center;margin-top:8px">Print preview → Save as PDF</div>`);
+}
+
+function sendReminder(type){
+  const s = currentStudent;
+  // Calculate total due across all months
+  let totalDue=0, pendingMonths=[];
+  const sessionMonths=getSessionMonths(s.class, detailYear);
+  sessionMonths.forEach(({year,month})=>{
+    const mk2=`${year}-${month}`;
+    const ex2=s.payments?.[mk2]||{paid:0};
+    const isFr=ex2.free||s.sessionFree;
+    if(isFr) return;
+    const fee2=ex2.customFee||s.sessionFee||s.monthlyFee;
+    const due2=Math.max(0,fee2-(ex2.paid||0));
+    if(due2>0){ totalDue+=due2; pendingMonths.push(MONTHS_HI[month]); }
+  });
+  totalDue+=(s.purvBakaya||0);
+
+  let msg='';
+  if(type==='soft'){
+    msg=`🏫 *Marg Darshan Point*
+📍 Madhpur, Motipur, Muzaffarpur, Bihar
+━━━━━━━━━━━━━━━━━━━
+`;
+    msg+=`📢 *शुल्क भुगतान अनुस्मारक*
+━━━━━━━━━━━━━━━━━━━
+`;
+    msg+=`👤 *छात्र:* ${s.name}
+`;
+    msg+=`📚 *Class:* ${s.class}
+`;
+    if(s.father) msg+=`👨 *पिता:* ${s.father}
+`;
+    msg+=`━━━━━━━━━━━━━━━━━━━
+`;
+    msg+=`💰 *बकाया विवरण*
+`;
+    msg+=`   बकाया माह: ${pendingMonths.join(', ')}
+`;
+    msg+=`   कुल बकाया: ₹${totalDue}
+`;
+    msg+=`━━━━━━━━━━━━━━━━━━━
+`;
+    msg+=`🙏 आदरणीय अभिभावक,
+
+आपके पुत्र/पुत्री *${s.name}* की कोचिंग फीस ₹${totalDue} बकाया है।
+
+कृपया *7 दिनों के भीतर* भुगतान करें।
+
+धन्यवाद 🙏
+`;
+    msg+=`
+_Marg Darshan Point_ 🎯`;
+  } else {
+    msg=`🏫 *Marg Darshan Point*
+📍 Madhpur, Motipur, Muzaffarpur, Bihar
+━━━━━━━━━━━━━━━━━━━
+`;
+    msg+=`🚨 *अंतिम चेतावनी — फीस भुगतान*
+━━━━━━━━━━━━━━━━━━━
+`;
+    msg+=`👤 *छात्र:* ${s.name}
+`;
+    msg+=`📚 *Class:* ${s.class}
+`;
+    if(s.father) msg+=`👨 *पिता:* ${s.father}
+`;
+    msg+=`━━━━━━━━━━━━━━━━━━━
+`;
+    msg+=`💰 *बकाया विवरण*
+`;
+    msg+=`   बकाया माह: ${pendingMonths.join(', ')}
+`;
+    msg+=`   कुल बकाया: ₹${totalDue}
+`;
+    msg+=`━━━━━━━━━━━━━━━━━━━
+`;
+    msg+=`⚠️ आदरणीय अभिभावक,
+
+आपके पुत्र/पुत्री *${s.name}* की कोचिंग फीस ₹${totalDue} काफी समय से बकाया है।
+
+🚨 *कृपया 7 दिनों के भीतर भुगतान करें।*
+
+यदि निर्धारित समय में भुगतान नहीं किया गया तो विद्यार्थी को कोचिंग से *निष्कासित* करना पड़ेगा।
+
+हम यह नहीं चाहते, परंतु संस्था के नियमों के अनुसार यह आवश्यक है।
+
+आशा है आप शीघ्र भुगतान करेंगे। 🙏
+`;
+    msg+=`
+_Marg Darshan Point_ 🎯`;
+  }
+
+  const phone=s.phone?s.phone.replace(/\D/g,''):'';
+  if(!phone){
+    if(confirm('फोन नंबर नहीं है।\nअभी नंबर जोड़ें?')){ closeModal(); openEditProfile(); }
+    return;
+  }
+  window.open(`https://wa.me/91${phone}?text=${encodeURIComponent(msg)}`,'_blank');
+}
+
+function checkWANumber(phone, onValid, onInvalid){
+  if(!phone){ onInvalid(); return; }
+  const num='91'+phone.replace(/\D/g,'');
+  // Open WhatsApp link — if number not on WA, WhatsApp shows error
+  // We open in new tab and let user confirm
+  const confirmed=confirm(`क्या ${phone} WhatsApp पर है?\n\nहाँ = भेजें\nनहीं = नंबर बदलें`);
+  if(confirmed) onValid(num);
+  else onInvalid();
+}
+
+function sendWhatsApp(){
+  const m=Number(document.getElementById('sh-m').value);
+  const y=Number(document.getElementById('sh-y').value);
+  const s=currentStudent, mk=`${y}-${m}`;
+  const p=s.payments?.[mk]||{paid:0,entries:[]};
+
+  // Check free/discount status
+  const isFree = p.free===true || s.sessionFree===true;
+  const customFee = p.customFee || s.sessionFee || s.monthlyFee;
+  const effectiveFee = isFree ? 0 : customFee;
+  const due = effectiveFee - p.paid;
+
+  const days=new Date(y,m+1,0).getDate();
+  let present=0,absent=0;
+  for(let d=1;d<=days;d++){
+    const v=s.attendance?.[`${y}-${m}-${d}`];
+    if(v===true)present++; else if(v===false)absent++;
+  }
+  const marks=(s.marks||[]).slice(-3);
+  let msg=`🏫 *Marg Darshan Point*\n📍 Madhpur, Motipur, Muzaffarpur, Bihar\n━━━━━━━━━━━━━━━━━━━\n`;
+  msg+=`👤 *छात्र:* ${s.name}${s.roll?' (Roll: '+s.roll+')':''}\n📚 *Class:* ${s.class}\n${s.father?'👨 *पिता:* '+s.father+'\n':''}${s.village?'🏘 *ग्राम:* '+s.village+'\n':''}🗓 *माह:* ${MONTHS_HI[m]} ${y}\n━━━━━━━━━━━━━━━━━━━\n`;
+
+  if(isFree){
+    msg+=`💰 *फीस विवरण*\n   🎁 इस माह की फीस माफ है\n`;
+    if((s.purvBakaya||0)>0){
+      msg+=`━━━━━━━━━━━━━━━━━━━\n`;
+      msg+=`💰 *बकाया विवरण*\n`;
+      msg+=`   पुराना बकाया: ₹${s.purvBakaya}\n`;
+      msg+=`   ━━━━━━━━━━━━━━━\n`;
+      msg+=`   *कुल बकाया: ₹${s.purvBakaya}*\n`;
+      msg+=`   ⚠️ कृपया पुराना बकाया जमा करें\n`;
+    } else {
+      msg+=`   ✅ कोई भुगतान नहीं करना\n`;
+    }
+  } else {
+    const thisDue = Math.max(0, due);
+    const purvDue = s.purvBakaya||0;
+    const totalDue = thisDue + purvDue;
+    msg+=`💰 *फीस विवरण*\n`;
+    msg+=`   लागू फीस: ₹${effectiveFee}`;
+    if(effectiveFee !== s.monthlyFee) msg+=` _(Discount: ₹${s.monthlyFee} → ₹${effectiveFee})_`;
+    msg+=`\n   जमा हुई: ₹${p.paid}\n`;
+    msg+=`   इस माह बाकी: ₹${thisDue}\n`;
+    if(purvDue>0){
+      msg+=`   पुराना बकाया: ₹${purvDue}\n`;
+      msg+=`   ━━━━━━━━━━━━━━━\n`;
+      msg+=`   *कुल बकाया: ₹${totalDue}*\n`;
+    }
+    msg+=totalDue<=0?`   ✅ फीस पूरी जमा है\n`:`   ⚠️ शीघ्र भुगतान करें\n`;
+  }
+  msg+=`━━━━━━━━━━━━━━━━━━━\n📅 *उपस्थिति*\n   ✅ उपस्थित: ${present} दिन\n   ❌ अनुपस्थित: ${absent} दिन\n`;
+  if(marks.length>0){
+    msg+=`━━━━━━━━━━━━━━━━━━━\n📝 *हालिया परीक्षा*\n`;
+    marks.forEach(mk2=>{
+      if(mk2.absent){
+        msg+=`   ❌ ${mk2.subject}${mk2.exam?' ('+mk2.exam+')':''}: अनुपस्थित${mk2.absentReason?' — '+mk2.absentReason:''}\n`;
+      } else {
+        const pct=Math.round(mk2.marks/mk2.outOf*100);
+        msg+=`   ${pct>=75?'🟢':pct>=50?'🟡':'🔴'} ${mk2.subject}${mk2.exam?' ('+mk2.exam+')':''}: ${mk2.marks}/${mk2.outOf} (${pct}%)\n`;
+      }
+    });
+  }
+  msg+=`━━━━━━━━━━━━━━━━━━━\n_Marg Darshan Point_ 🎯`;
+  const rawPhone=s.phone?s.phone.replace(/\D/g,''):'';
+  if(!rawPhone){
+    if(confirm('फोन नंबर नहीं है।\nअभी नंबर जोड़ना चाहते हैं?')){ closeModal(); openEditProfile(); }
+    return;
+  }
+  checkWANumber(s.phone,
+    (num)=>{ window.open(`https://wa.me/${num}?text=${encodeURIComponent(msg)}`,'_blank'); },
+    ()=>{ closeModal(); openEditProfile(); }
+  );
+}
+
+function printReport(){
+  const m=Number(document.getElementById('sh-m').value);
+  const y=Number(document.getElementById('sh-y').value);
+  const s=currentStudent, mk=`${y}-${m}`;
+  const p=s.payments?.[mk]||{paid:0,entries:[]};
+  const isFree2 = p.free===true || s.sessionFree===true;
+  const effFee2 = isFree2 ? 0 : (p.customFee || s.sessionFee || s.monthlyFee);
+  const due2 = effFee2 - p.paid;
+  const due = due2; // for compatibility
+  const days=new Date(y,m+1,0).getDate();
+  let present=0,absent=0;
+  for(let d=1;d<=days;d++){const v=s.attendance?.[`${y}-${m}-${d}`];if(v===true)present++;else if(v===false)absent++;}
+  const attPct=(present+absent)>0?Math.round(present/(present+absent)*100):0;
+  const marks=s.marks||[];
+  const w=window.open('','_blank');
+  w.document.write(`<!DOCTYPE html><html><head><meta charset="UTF-8"><title>Report — ${s.name}</title>
+  <style>*{margin:0;padding:0;box-sizing:border-box;}body{font-family:sans-serif;padding:28px;color:#1e293b;max-width:580px;margin:auto;}
+  h1{color:#2563eb;font-size:20px;}.sub{color:#64748b;font-size:12px;margin-top:3px;}.month-title{font-weight:700;margin-top:6px;}
+  .info{display:grid;grid-template-columns:1fr 1fr;gap:8px;background:#f1f5f9;border-radius:8px;padding:12px;margin:14px 0;}
+  .info label{font-size:11px;color:#64748b;}
+  .info span{font-weight:600;}
+  h2{font-size:14px;color:#2563eb;border-left:4px solid #2563eb;padding-left:8px;margin:14px 0 8px;}
+  .row{display:flex;justify-content:space-between;padding:6px 8px;font-size:13px;border-bottom:1px solid #f1f5f9;}
+  .row:nth-child(even){background:#f8fafc;}
+  table{width:100%;border-collapse:collapse;font-size:12px;}
+  th{background:#2563eb;color:#fff;padding:7px;text-align:left;}
+  td{padding:6px 8px;border-bottom:1px solid #e2e8f0;}
+  .footer{text-align:center;margin-top:20px;font-size:12px;color:#94a3b8;border-top:1px solid #e2e8f0;padding-top:12px;}
+  @media print{body{padding:12px;}}
+  </style></head><body>
+  <div style="text-align:center;border-bottom:3px solid #2563eb;padding-bottom:12px;margin-bottom:14px">
+    <h1>📚 Marg Darshan Point</h1>
+    <div class="sub">Madhpur, Motipur, Muzaffarpur, Bihar</div>
+    <div class="month-title">प्रगति रिपोर्ट — ${MONTHS_HI[m]} ${y}</div>
+  </div>
+  <div class="info">
+    <div><label>छात्र का नाम</label><br><span>${s.name}</span></div>
+    <div><label>Roll No. / कक्षा</label><br><span>${s.roll||'—'} / ${s.class}</span></div>
+    <div><label>पिता का नाम</label><br><span>${s.father||'—'}</span></div>
+    <div><label>माता का नाम</label><br><span>${s.mother||'—'}</span></div>
+    <div><label>ग्राम / मोहल्ला</label><br><span>${s.village||'—'}</span></div>
+    <div><label>फोन</label><br><span>${s.phone||'—'}</span></div>
+    <div><label>मासिक फीस</label><br><span>₹${s.monthlyFee}</span></div>
+  </div>
+  <h2>💰 फीस विवरण</h2>
+  ${isFree2?
+    `<div class="row"><span>फीस स्थिति</span><span style="color:#16a34a;font-weight:700">🎁 इस माह माफ</span></div>
+     <div class="row"><span>देय राशि</span><span style="color:#16a34a;font-weight:700">₹0 (FREE)</span></div>`
+    :
+    `<div class="row"><span>लागू फीस</span><span>₹${effFee2}${effFee2!==s.monthlyFee?' <small style="color:#64748b">(Discount)</small>':''}</span></div>
+     <div class="row"><span>जमा हुई</span><span style="color:#16a34a;font-weight:700">₹${p.paid}</span></div>
+     <div class="row"><span>बाकी</span><span style="color:${due2<=0?'#16a34a':'#dc2626'};font-weight:700">₹${Math.max(0,due2)}</span></div>
+     ${s.purvBakaya>0?`<div class="row"><span style="color:#d97706">⚠️ पुराना बकाया</span><span style="color:#dc2626;font-weight:700">₹${s.purvBakaya}</span></div>`:''}`
+  }
+  <h2>📅 उपस्थिति</h2>
+  <div class="row"><span>✅ उपस्थित</span><span style="color:#16a34a;font-weight:700">${present} दिन</span></div>
+  <div class="row"><span>❌ अनुपस्थित</span><span style="color:#dc2626;font-weight:700">${absent} दिन</span></div>
+  <div class="row"><span>उपस्थिति %</span><span style="font-weight:700">${attPct}%</span></div>
+  ${marks.length>0?`<h2>📝 परीक्षा परिणाम</h2><table><tr><th>विषय</th><th>परीक्षा</th><th>अंक</th><th>%</th></tr>${marks.map(mk2=>{const pct=Math.round(mk2.marks/mk2.outOf*100);return`<tr><td>${mk2.subject}</td><td>${mk2.exam}</td><td>${mk2.marks}/${mk2.outOf}</td><td style="color:${pct>=75?'#16a34a':pct>=50?'#d97706':'#dc2626'};font-weight:700">${pct}%</td></tr>`;}).join('')}</table>`:''}
+  <div class="footer"><b style="color:#2563eb">Amod Sir — मस्ती के साथ Mastery 🎯</b><br>रिपोर्ट दिनांक: ${new Date().toLocaleDateString('hi-IN')}</div>
+  <script>window.onload=()=>window.print();<\/script></body></html>`);
+  w.document.close();
+}
+
+// ── Modal ─────────────────────────────────────────────────────────────────
+function showModal(html){
+  document.getElementById('modal-box').innerHTML=html;
+  document.getElementById('modal').classList.remove('hidden');
+}
+function closeModal(e){
+  if(!e||e.target===document.getElementById('modal')) document.getElementById('modal').classList.add('hidden');
+}
+
+// ── Accounts (Expenses + Teacher Payment) ────────────────────────────────
+const EXP_CATS = ['किराया','बिजली','पानी','Stationery','Furniture','Book/Copy','Exam fee','Repair','Salary','अन्य'];
+
+let expenses = load('mdp_expenses',[]);
+let teachers = load('mdp_teachers',[]);
+let expMonth = new Date().getMonth(), expYear = new Date().getFullYear();
+
+function showSection(sec){
+  document.getElementById('list-view').style.display = sec==='students'?'block':'none';
+  document.getElementById('accounts-view').style.display = sec==='accounts'?'block':'none';
+  document.getElementById('detail-view').style.display = 'none';
+  document.getElementById('nav-students').style.color = sec==='students'?'#60a5fa':'#64748b';
+  document.getElementById('nav-students').style.fontWeight = sec==='students'?'700':'400';
+  document.getElementById('nav-accounts').style.color = sec==='accounts'?'#60a5fa':'#64748b';
+  document.getElementById('nav-accounts').style.fontWeight = sec==='accounts'?'700':'400';
+  if(sec==='accounts'){ renderAccountsSummary(); renderExpenses(); renderTeachers(); }
+}
+
+function switchAccTab(tab, btn){
+  document.querySelectorAll('#accounts-view .tab-btn').forEach(b=>{ b.style.color='#64748b'; b.style.borderBottom='2px solid transparent'; b.style.fontWeight='400'; });
+  btn.style.color='#60a5fa'; btn.style.borderBottom='2px solid #60a5fa'; btn.style.fontWeight='700';
+  document.getElementById('acc-expenses-pane').style.display = tab==='expenses'?'block':'none';
+  document.getElementById('acc-teachers-pane').style.display = tab==='teachers'?'block':'none';
+}
+
+// ── Accounts Summary ──────────────────────────────────────────────────────
+function renderAccountsSummary(){
+  const mk = `${expYear}-${expMonth}`;
+  // Fees collected this month
+  let feesIn=0, feesDue=0;
+  students.forEach(s=>{
+    feesIn += s.payments?.[mk]?.paid||0;
+    const ex2=s.payments?.[mk];
+    const isFr=ex2?.free||s.sessionFree;
+    const cFee=ex2?.customFee||s.sessionFee||s.monthlyFee;
+    if(!isFr) feesDue+=cFee;
+  });
+  const feesRemaining=Math.max(0,feesDue-feesIn);
+  // Expenses
+  const monthExp=expenses.filter(e=>e.year===expYear&&e.month===expMonth);
+  const totalExp=monthExp.reduce((s,e)=>s+e.amount,0);
+  // Teacher payments
+  const monthPay=teachers.reduce((s,t)=>{
+    const p=(t.payments||[]).filter(p=>p.year===expYear&&p.month===expMonth);
+    return s+p.reduce((a,b)=>a+b.amount,0);
+  },0);
+  const net=feesIn-totalExp-monthPay;
+  // Year totals
+  const yearFeesIn=students.reduce((tot,s)=>{
+    return tot+Object.entries(s.payments||{}).filter(([k])=>k.startsWith(expYear+'-')).reduce((a,[,v])=>a+(v.paid||0),0);
+  },0);
+  const yearExp=expenses.filter(e=>e.year===expYear).reduce((s,e)=>s+e.amount,0);
+  const yearPay=teachers.reduce((s,t)=>(t.payments||[]).filter(p=>p.year===expYear).reduce((a,b)=>a+b.amount,s),0);
+  const yearNet=yearFeesIn-yearExp-yearPay;
+
+  document.getElementById('accounts-summary').innerHTML=`
+  <div style="padding:12px 16px;background:#0f172a;border-bottom:1px solid #1e293b;">
+    <div style="display:flex;gap:8px;margin-bottom:10px;">
+      <select style="flex:1;background:#1e293b;border:1px solid #334155;border-radius:7px;padding:6px 8px;color:#e2e8f0;font-size:12px;" onchange="expMonth=Number(this.value);renderAccountsSummary();renderExpenses();renderTeachers()">
+        ${MONTHS_HI.map((m,i)=>`<option value="${i}"${i===expMonth?' selected':''}>${m}</option>`).join('')}
+      </select>
+      <select style="flex:1;background:#1e293b;border:1px solid #334155;border-radius:7px;padding:6px 8px;color:#e2e8f0;font-size:12px;" onchange="expYear=Number(this.value);renderAccountsSummary();renderExpenses();renderTeachers()">
+        ${YEARS.map(y=>`<option${y===expYear?' selected':''}>${y}</option>`).join('')}
+      </select>
+    </div>
+
+    <div style="font-size:11px;font-weight:700;color:#94a3b8;margin-bottom:6px;letter-spacing:0.5px">${MONTHS_HI[expMonth]} ${expYear} — मासिक हिसाब</div>
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:6px;margin-bottom:8px;">
+      <div style="background:#1e293b;border-radius:8px;padding:10px;text-align:center;">
+        <div style="font-size:16px;font-weight:700;color:#4ade80;">₹${feesIn}</div>
+        <div style="font-size:9px;color:#64748b;">Fees जमा</div>
+      </div>
+      <div style="background:#1e293b;border-radius:8px;padding:10px;text-align:center;">
+        <div style="font-size:16px;font-weight:700;color:#fb923c;">₹${feesRemaining}</div>
+        <div style="font-size:9px;color:#64748b;">Fees बाकी</div>
+      </div>
+      <div style="background:#1e293b;border-radius:8px;padding:10px;text-align:center;">
+        <div style="font-size:16px;font-weight:700;color:#f87171;">₹${totalExp}</div>
+        <div style="font-size:9px;color:#64748b;">खर्च</div>
+      </div>
+      <div style="background:#1e293b;border-radius:8px;padding:10px;text-align:center;">
+        <div style="font-size:16px;font-weight:700;color:#fb923c;">₹${monthPay}</div>
+        <div style="font-size:9px;color:#64748b;">Teacher Payment</div>
+      </div>
+    </div>
+    <div style="background:${net>=0?'#0d2d0d':'#2d0d0d'};border:1px solid ${net>=0?'#166534':'#7c1d1d'};border-radius:10px;padding:12px;display:flex;justify-content:space-between;align-items:center;margin-bottom:10px;">
+      <span style="font-size:13px;font-weight:700;color:${net>=0?'#4ade80':'#f87171'};">${net>=0?'✅ इस माह लाभ':'❌ इस माह हानि'}</span>
+      <span style="font-size:20px;font-weight:700;color:${net>=0?'#4ade80':'#f87171'};">₹${Math.abs(net)}</span>
+    </div>
+
+    <div style="font-size:11px;font-weight:700;color:#94a3b8;margin-bottom:6px;letter-spacing:0.5px">${expYear} — वार्षिक हिसाब</div>
+    <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:6px;margin-bottom:8px;">
+      <div style="background:#1e293b;border-radius:8px;padding:8px 4px;text-align:center;">
+        <div style="font-size:14px;font-weight:700;color:#4ade80;">₹${yearFeesIn}</div>
+        <div style="font-size:9px;color:#64748b;">कुल Fees</div>
+      </div>
+      <div style="background:#1e293b;border-radius:8px;padding:8px 4px;text-align:center;">
+        <div style="font-size:14px;font-weight:700;color:#f87171;">₹${yearExp+yearPay}</div>
+        <div style="font-size:9px;color:#64748b;">कुल खर्च</div>
+      </div>
+      <div style="background:${yearNet>=0?'#0d2d0d':'#2d0d0d'};border-radius:8px;padding:8px 4px;text-align:center;border:1px solid ${yearNet>=0?'#166534':'#7c1d1d'}">
+        <div style="font-size:14px;font-weight:700;color:${yearNet>=0?'#4ade80':'#f87171'};">₹${Math.abs(yearNet)}</div>
+        <div style="font-size:9px;color:${yearNet>=0?'#4ade80':'#f87171'};">${yearNet>=0?'वार्षिक लाभ':'वार्षिक हानि'}</div>
+      </div>
+    </div>
+  </div>`;
+}
+
+// ── Expenses ──────────────────────────────────────────────────────────────
+function renderExpenses(){
+  const monthExp = expenses.filter(e=>e.year===expYear && e.month===expMonth);
+  const total = monthExp.reduce((s,e)=>s+e.amount,0);
+
+  // Group by category
+  const byCat = {};
+  monthExp.forEach(e=>{ if(!byCat[e.category]) byCat[e.category]=0; byCat[e.category]+=e.amount; });
+
+  let html = `<div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:12px;">
+    <div>
+      <div style="font-size:13px;font-weight:700;color:#e2e8f0;">💸 खर्च — ${MONTHS_HI[expMonth]} ${expYear}</div>
+      <div style="font-size:11px;color:#f87171;margin-top:2px;">कुल: ₹${total}</div>
+    </div>
+    <button class="btn-sm btn-primary" onclick="openAddExpense()">+ जोड़ें</button>
+  </div>`;
+
+  // Category summary pills
+  if(Object.keys(byCat).length>0){
+    html+=`<div style="display:flex;gap:6px;flex-wrap:wrap;margin-bottom:12px;">`;
+    Object.entries(byCat).forEach(([cat,amt])=>{
+      html+=`<div style="background:#1e293b;border-radius:20px;padding:4px 10px;font-size:11px;"><span style="color:#94a3b8;">${cat}</span> <span style="color:#f87171;font-weight:700;">₹${amt}</span></div>`;
+    });
+    html+=`</div>`;
+  }
+
+  if(monthExp.length===0){ html+=`<div class="empty-msg">इस महीने कोई खर्च नहीं।</div>`; }
+
+  monthExp.forEach((e,i)=>{
+    const realIdx = expenses.indexOf(e);
+    html+=`<div class="activity-card">
+      <div style="display:flex;justify-content:space-between;align-items:center;">
+        <div>
+          <div style="font-size:13px;font-weight:600;">${e.description||e.category}</div>
+          <div style="font-size:11px;color:#64748b;">${e.category} • ${e.date}</div>
+          ${e.note?`<div style="font-size:11px;color:#94a3b8;">${e.note}</div>`:''}
+        </div>
+        <div style="display:flex;align-items:center;gap:10px;">
+          <span style="font-size:16px;font-weight:700;color:#f87171;">₹${e.amount}</span>
+          <button class="btn-icon" style="color:#60a5fa;" onclick="openEditExpense(${realIdx})">✏️</button>
+          <button class="btn-icon text-red" onclick="delExpense(${realIdx})">🗑</button>
+        </div>
+      </div>
+    </div>`;
+  });
+
+  // Yearly total
+  const yearTotal = expenses.filter(e=>e.year===expYear).reduce((s,e)=>s+e.amount,0);
+  html+=`<div style="margin-top:16px;background:#1e293b;border-radius:10px;padding:12px;text-align:center;">
+    <div style="font-size:12px;color:#64748b;">${expYear} — पूरे साल का खर्च</div>
+    <div style="font-size:20px;font-weight:700;color:#f87171;margin-top:4px;">₹${yearTotal}</div>
+  </div>`;
+
+  document.getElementById('acc-expenses-pane').innerHTML = html;
+}
+
+function openAddExpense(idx=-1){
+  const e = idx>=0 ? expenses[idx] : {category:EXP_CATS[0],description:'',amount:'',date:new Date().toLocaleDateString('hi-IN'),note:'',month:expMonth,year:expYear};
+  showModal(`<div class="modal-title">${idx>=0?'✏️ खर्च Edit':'💸 खर्च जोड़ें'}</div>
+    <div class="form-group"><label class="form-label">Category</label>
+      <select class="inp" id="ex-cat">${EXP_CATS.map(c=>`<option${c===e.category?' selected':''}>${c}</option>`).join('')}</select></div>
+    <div class="form-group"><label class="form-label">विवरण (क्या खरीदा/खर्च किया)</label>
+      <input class="inp" id="ex-desc" type="text" value="${e.description||''}" placeholder="जैसे — कुर्सी खरीदी, बिजली बिल"></div>
+    <div class="form-group"><label class="form-label">राशि (₹) *</label>
+      <input class="inp" id="ex-amt" type="number" value="${e.amount||''}"></div>
+    <div class="form-group"><label class="form-label">दिनांक</label>
+      <input class="inp" id="ex-date" type="text" value="${e.date||''}"></div>
+    <div class="form-group"><label class="form-label">नोट (optional)</label>
+      <input class="inp" id="ex-note" type="text" value="${e.note||''}"></div>
+    <button class="btn btn-primary" style="background:#dc2626;" onclick="saveExpense(${idx})">✓ ${idx>=0?'Update':'Save'} करें</button>`);
+}
+function openEditExpense(i){ openAddExpense(i); }
+function saveExpense(idx){
+  const amt = Number(document.getElementById('ex-amt').value);
+  if(!amt) return alert('राशि डालें');
+  const entry={
+    category:document.getElementById('ex-cat').value,
+    description:document.getElementById('ex-desc').value.trim(),
+    amount:amt,
+    date:document.getElementById('ex-date').value,
+    note:document.getElementById('ex-note').value.trim(),
+    month:expMonth, year:expYear, id:generateId()
+  };
+  if(idx>=0) expenses[idx]={...expenses[idx],...entry};
+  else expenses.push(entry);
+  save('mdp_expenses',expenses);
+  closeModal(); renderAccountsSummary(); renderExpenses();
+}
+function delExpense(i){
+  if(!confirm('यह खर्च हटाएं?')) return;
+  expenses.splice(i,1);
+  save('mdp_expenses',expenses);
+  renderAccountsSummary(); renderExpenses();
+}
+
+// ── Teacher Payments ──────────────────────────────────────────────────────
+function renderTeachers(){
+  let html=`<div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:14px;">
+    <div style="font-size:13px;font-weight:700;color:#e2e8f0;">👨‍🏫 Teacher — ${MONTHS_HI[expMonth]} ${expYear}</div>
+    <button class="btn-sm btn-primary" onclick="openAddTeacher()">+ Teacher</button>
+  </div>`;
+
+  if(teachers.length===0){ html+=`<div class="empty-msg">कोई teacher नहीं। "+ Teacher" से जोड़ें।</div>`; }
+
+  teachers.forEach((t,ti)=>{
+    const monthPays = (t.payments||[]).filter(p=>p.year===expYear&&p.month===expMonth);
+    const monthTotal = monthPays.reduce((s,p)=>s+p.amount,0);
+    const allTotal = (t.payments||[]).reduce((s,p)=>s+p.amount,0);
+    html+=`<div class="activity-card" style="margin-bottom:12px;">
+      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px;">
+        <div>
+          <div style="font-size:14px;font-weight:700;">${t.name}</div>
+          <div style="font-size:11px;color:#64748b;">${t.role||'Teacher'}${t.subject?' • '+t.subject:''}</div>
+        </div>
+        <div style="display:flex;gap:8px;align-items:center;">
+          <button class="btn-sm" style="background:#166534;color:#4ade80;border:none;border-radius:8px;padding:5px 10px;font-size:11px;cursor:pointer;" onclick="openPayTeacher(${ti})">+ Payment</button>
+          <button class="btn-icon" style="color:#60a5fa;" onclick="openEditTeacher(${ti})">✏️</button>
+          <button class="btn-icon text-red" onclick="delTeacher(${ti})">🗑</button>
+        </div>
+      </div>
+      <div style="display:flex;gap:8px;margin-bottom:8px;">
+        <div style="flex:1;background:#0f172a;border-radius:8px;padding:8px;text-align:center;">
+          <div style="font-size:14px;font-weight:700;color:#fb923c;">₹${monthTotal}</div>
+          <div style="font-size:9px;color:#64748b;">इस माह</div>
+        </div>
+        <div style="flex:1;background:#0f172a;border-radius:8px;padding:8px;text-align:center;">
+          <div style="font-size:14px;font-weight:700;color:#94a3b8;">₹${allTotal}</div>
+          <div style="font-size:9px;color:#64748b;">कुल अब तक</div>
+        </div>
+      </div>
+      ${monthPays.map((p,pi)=>`
+        <div class="entry-row" style="margin-bottom:4px;">
+          <span style="font-size:12px;color:#94a3b8;">${p.date} ${p.note?'— '+p.note:''}</span>
+          <div style="display:flex;gap:8px;align-items:center;">
+            <span style="font-weight:700;color:#fb923c;">₹${p.amount}</span>
+            <button class="btn-icon text-red" style="font-size:12px;" onclick="delTeacherPay(${ti},${(t.payments||[]).indexOf(p)})">🗑</button>
+          </div>
+        </div>`).join('')}
+    </div>`;
+  });
+
+  document.getElementById('acc-teachers-pane').innerHTML = html;
+}
+
+function openAddTeacher(idx=-1){
+  const t = idx>=0 ? teachers[idx] : {name:'',role:'Teacher',subject:'',phone:''};
+  showModal(`<div class="modal-title">${idx>=0?'✏️ Teacher Edit':'👨‍🏫 Teacher जोड़ें'}</div>
+    <div class="form-group"><label class="form-label">नाम *</label><input class="inp" id="tc-name" type="text" value="${t.name||''}"></div>
+    <div class="form-group"><label class="form-label">Role</label>
+      <select class="inp" id="tc-role">
+        <option${t.role==='Teacher'?' selected':''}>Teacher</option>
+        <option${t.role==='Substitute'?' selected':''}>Substitute</option>
+        <option${t.role==='Helper'?' selected':''}>Helper</option>
+      </select></div>
+    <div class="form-group"><label class="form-label">Subject</label>
+      <select class="inp" id="tc-sub">${SUBJECTS.map(s=>`<option${s===t.subject?' selected':''}>${s}</option>`).join('')}</select></div>
+    <div class="form-group"><label class="form-label">Phone</label><input class="inp" id="tc-phone" type="tel" value="${t.phone||''}"></div>
+    <button class="btn btn-primary" onclick="saveTeacher(${idx})">✓ ${idx>=0?'Update':'Save'} करें</button>`);
+}
+function openEditTeacher(i){ openAddTeacher(i); }
+function saveTeacher(idx){
+  const name=document.getElementById('tc-name').value.trim();
+  if(!name) return alert('नाम डालें');
+  const entry={name,role:document.getElementById('tc-role').value,subject:document.getElementById('tc-sub').value,phone:document.getElementById('tc-phone').value.trim(),payments:idx>=0?(teachers[idx].payments||[]):[]};
+  if(idx>=0) teachers[idx]={...teachers[idx],...entry};
+  else teachers.push(entry);
+  save('mdp_teachers',teachers);
+  closeModal(); renderAccountsSummary(); renderTeachers();
+}
+function delTeacher(i){
+  if(!confirm('इस teacher को हटाएं?')) return;
+  teachers.splice(i,1);
+  save('mdp_teachers',teachers);
+  renderAccountsSummary(); renderTeachers();
+}
+
+function openPayTeacher(ti){
+  showModal(`<div class="modal-title">💰 Payment — ${teachers[ti].name}</div>
+    <div class="form-group"><label class="form-label">राशि (₹) *</label><input class="inp" id="tp-amt" type="number" placeholder="जितना दिया"></div>
+    <div class="form-group"><label class="form-label">दिनांक</label><input class="inp" id="tp-date" type="text" value="${new Date().toLocaleDateString('hi-IN')}"></div>
+    <div class="form-group"><label class="form-label">नोट (optional)</label><input class="inp" id="tp-note" type="text" placeholder="जैसे — April salary, Extra class"></div>
+    <button class="btn btn-primary" style="background:#166534;color:#4ade80;" onclick="saveTeacherPay(${ti})">✓ Payment Save करें</button>`);
+}
+function saveTeacherPay(ti){
+  const amt=Number(document.getElementById('tp-amt').value);
+  if(!amt) return alert('राशि डालें');
+  if(!teachers[ti].payments) teachers[ti].payments=[];
+  teachers[ti].payments.push({amount:amt,date:document.getElementById('tp-date').value,note:document.getElementById('tp-note').value.trim(),month:expMonth,year:expYear});
+  save('mdp_teachers',teachers);
+  closeModal(); renderAccountsSummary(); renderTeachers();
+}
+function delTeacherPay(ti,pi){
+  if(!confirm('यह payment हटाएं?')) return;
+  teachers[ti].payments.splice(pi,1);
+  save('mdp_teachers',teachers);
+  renderAccountsSummary(); renderTeachers();
+}
+
+// ── PWA Install ──────────────────────────────────────────────────────────
+let deferredPrompt=null;
+
+// Create manifest blob
+const manifest={name:'Marg Darshan Point',short_name:'MDP Ledger',
+  start_url:window.location.href,display:'standalone',
+  background_color:'#0f172a',theme_color:'#0f172a',
+  icons:[{src:'data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>📚</text></svg>',sizes:'any',type:'image/svg+xml'}]};
+const blob=new Blob([JSON.stringify(manifest)],{type:'application/json'});
+const murl=URL.createObjectURL(blob);
+document.getElementById('pwa-manifest').href=murl;
+
+window.addEventListener('beforeinstallprompt',(e)=>{
+  e.preventDefault(); deferredPrompt=e;
+  document.getElementById('install-banner').classList.add('show');
+});
+window.addEventListener('appinstalled',()=>{
+  document.getElementById('install-banner').classList.remove('show');
+  deferredPrompt=null;
+});
+
+// iOS detection
+const isIOS=/iphone|ipad|ipod/i.test(navigator.userAgent);
+const isInStandalone=window.navigator.standalone===true;
+if(isIOS&&!isInStandalone&&!localStorage.getItem('ios-tip-dismissed')){
+  document.getElementById('ios-banner').style.display='block';
+}
+
+function installApp(){
+  if(!deferredPrompt) return;
+  deferredPrompt.prompt();
+  deferredPrompt.userChoice.then(()=>{ deferredPrompt=null; document.getElementById('install-banner').classList.remove('show'); });
+}
+function dismissInstall(){
+  document.getElementById('install-banner').classList.remove('show');
+}
+
+// ── Init ──────────────────────────────────────────────────────────────────
+initPin();
+</script>
+</body>
+</html>
